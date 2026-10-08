@@ -1,199 +1,1144 @@
+```html
 <!DOCTYPE html>
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitorização Agrícola - NASA Data</title>
-    
-    <!-- Tailwind CSS para Estilização Rápida -->
-    <script src="https://tailwindcss.com"></script>
-    
-    <!-- Leaflet.js para o Mapa Interativo -->
-    <link rel="stylesheet" href="https://unpkg.com" />
-    <script src="https://unpkg.com"></script>
-    
-    <!-- Chart.js para os Gráficos -->
-    <script src="https://jsdelivr.net"></script>
-</head>
-<body class="bg-gray-50 font-sans text-gray-800">
 
-    <!-- Header / Barra de Navegação -->
-    <header class="bg-green-700 text-white shadow-md p-4 mb-6">
-        <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold flex items-center gap-2">
-                🌱 Dashboard Agrícola NASA POWER
-            </h1>
-            <span class="text-sm bg-green-800 px-3 py-1 rounded-full">Dados em Tempo Real</span>
+    <title>Monitorização Agrícola — NASA POWER</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Leaflet -->
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+
+    <script
+        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+    </script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            min-height: 100vh;
+        }
+
+        #map {
+            min-height: 320px;
+        }
+
+        .leaflet-container {
+            font-family: inherit;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+        }
+
+        .stat-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 text-slate-800">
+
+    <!-- HEADER -->
+    <header class="bg-gradient-to-r from-green-800 via-green-700 to-emerald-600 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 py-5">
+
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+
+                <div>
+                    <div class="flex items-center gap-3">
+                        <div class="text-3xl">🌱</div>
+
+                        <div>
+                            <h1 class="text-xl md:text-2xl font-bold">
+                                Monitorização Agrícola
+                            </h1>
+
+                            <p class="text-green-100 text-sm">
+                                Dados climáticos através da NASA POWER
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <span class="flex items-center gap-2 bg-green-900/40 px-4 py-2 rounded-full text-sm">
+                        <span class="w-2 h-2 bg-green-300 rounded-full animate-pulse"></span>
+                        NASA POWER
+                    </span>
+                </div>
+
+            </div>
         </div>
     </header>
 
-    <main class="container mx-auto px-4 max-w-7xl">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            <!-- Painel de Controlo e Mapa -->
-            <div class="lg:col-span-1 bg-white p-4 rounded-xl shadow flex flex-col gap-4">
-                <h2 class="text-lg font-semibold text-green-800 border-b pb-2">1. Selecionar Localização</h2>
-                <p class="text-sm text-gray-600">Clique em qualquer ponto do mapa para extrair os dados agroclimáticos da NASA.</p>
-                
-                <!-- Contentor do Mapa -->
-                <div id="map" class="h-80 w-full rounded-lg border border-gray-200 z-10"></div>
-                
-                <!-- Inputs de Coordenadas -->
-                <div class="grid grid-cols-2 gap-2 text-sm">
-                    <div>
-                        <label class="block text-gray-600 font-medium">Latitude</label>
-                        <input id="lat-input" type="number" step="0.01" value="-15.78" class="w-full p-2 border rounded bg-gray-50" readonly>
-                    </div>
-                    <div>
-                        <label class="block text-gray-600 font-medium">Longitude</label>
-                        <input id="lon-input" type="number" step="0.01" value="-47.92" class="w-full p-2 border rounded bg-gray-50" readonly>
-                    </div>
-                </div>
-                
-                <button id="btn-buscar" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 rounded-lg transition shadow">
-                    Atualizar Dados da Região
-                </button>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main class="max-w-7xl mx-auto px-4 py-6">
+
+        <!-- STATUS -->
+        <div
+            id="status-loading"
+            class="hidden mb-6 bg-blue-50 border border-blue-200 text-blue-700 p-4 rounded-xl"
+        >
+            <div class="flex items-center justify-center gap-3">
+                <div class="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+
+                <span>
+                    A consultar os dados da NASA POWER...
+                </span>
             </div>
+        </div>
 
-            <!-- Painel de Gráficos e Dados -->
-            <div class="lg:col-span-2 flex flex-col gap-6">
-                <!-- Estado do Carregamento -->
-                <div id="status-loading" class="hidden bg-blue-50 text-blue-700 p-4 rounded-xl border border-blue-200 animate-pulse text-center">
-                    ⏳ A ligar aos servidores da NASA Earth Data... Por favor, aguarde.
+
+        <!-- ERRO -->
+        <div
+            id="status-error"
+            class="hidden mb-6 bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl"
+        >
+        </div>
+
+
+        <!-- GRID PRINCIPAL -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- PAINEL DO MAPA -->
+            <section class="lg:col-span-1">
+
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+
+                    <div class="p-5 border-b border-slate-200">
+
+                        <div class="flex items-center gap-3 mb-2">
+
+                            <div class="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center text-xl">
+                                📍
+                            </div>
+
+                            <div>
+                                <h2 class="font-bold text-slate-800">
+                                    Localização
+                                </h2>
+
+                                <p class="text-xs text-slate-500">
+                                    Selecione uma região no mapa
+                                </p>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- MAPA -->
+                    <div class="p-4">
+
+                        <div
+                            id="map"
+                            class="w-full rounded-xl overflow-hidden border border-slate-200"
+                        ></div>
+
+                    </div>
+
+
+                    <!-- COORDENADAS -->
+                    <div class="px-4 pb-4">
+
+                        <div class="grid grid-cols-2 gap-3">
+
+                            <div>
+                                <label
+                                    for="lat-input"
+                                    class="block text-xs font-semibold text-slate-500 mb-1"
+                                >
+                                    Latitude
+                                </label>
+
+                                <input
+                                    id="lat-input"
+                                    type="number"
+                                    step="0.0001"
+                                    value="-8.8383"
+                                    readonly
+                                    class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium focus:outline-none"
+                                >
+                            </div>
+
+
+                            <div>
+                                <label
+                                    for="lon-input"
+                                    class="block text-xs font-semibold text-slate-500 mb-1"
+                                >
+                                    Longitude
+                                </label>
+
+                                <input
+                                    id="lon-input"
+                                    type="number"
+                                    step="0.0001"
+                                    value="13.2344"
+                                    readonly
+                                    class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium focus:outline-none"
+                                >
+                            </div>
+
+                        </div>
+
+
+                        <button
+                            id="btn-buscar"
+                            type="button"
+                            class="mt-4 w-full bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-semibold py-3 rounded-xl transition shadow-sm"
+                        >
+                            🔄 Atualizar dados
+                        </button>
+
+                    </div>
+
                 </div>
 
-                <!-- Gráficos (Invisíveis até haver dados) -->
-                <div id="dados-container" class="bg-white p-6 rounded-xl shadow flex flex-col gap-6">
-                    <h2 class="text-lg font-semibold text-gray-800 border-b pb-2">2. Análise Agroclimática (Últimos 15 Dias)</h2>
-                    
-                    <!-- Gráfico de Temperatura -->
-                    <div class="relative h-64 w-full">
+
+                <!-- INFORMAÇÃO -->
+                <div class="mt-4 bg-green-50 border border-green-100 rounded-2xl p-4">
+
+                    <h3 class="font-semibold text-green-900 mb-2">
+                        💡 Como utilizar
+                    </h3>
+
+                    <p class="text-sm text-green-800 leading-relaxed">
+                        Clique em qualquer ponto do mapa para selecionar uma
+                        localização. Depois clique em
+                        <strong>“Atualizar dados”</strong> para consultar
+                        os dados agroclimáticos disponíveis.
+                    </p>
+
+                </div>
+
+            </section>
+
+
+            <!-- PAINEL DE DADOS -->
+            <section class="lg:col-span-2 space-y-6">
+
+                <!-- TÍTULO -->
+                <div>
+
+                    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
+
+                        <div>
+                            <p class="text-sm font-medium text-green-600">
+                                ANÁLISE AGROCLIMÁTICA
+                            </p>
+
+                            <h2 class="text-2xl font-bold text-slate-900">
+                                Condições recentes
+                            </h2>
+
+                            <p class="text-sm text-slate-500 mt-1">
+                                Dados diários dos últimos 15 dias disponíveis.
+                            </p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- CARDS DE RESUMO -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+                    <!-- TEMP MÁXIMA -->
+                    <div class="stat-card bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+
+                        <div class="flex items-center justify-between">
+
+                            <div>
+                                <p class="text-xs font-semibold uppercase text-slate-400">
+                                    Temp. máxima
+                                </p>
+
+                                <p
+                                    id="temp-max-value"
+                                    class="text-2xl font-bold text-red-500 mt-1"
+                                >
+                                    -- °C
+                                </p>
+                            </div>
+
+                            <div class="w-11 h-11 bg-red-50 rounded-xl flex items-center justify-center text-xl">
+                                🌡️
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- TEMP MÍNIMA -->
+                    <div class="stat-card bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+
+                        <div class="flex items-center justify-between">
+
+                            <div>
+                                <p class="text-xs font-semibold uppercase text-slate-400">
+                                    Temp. mínima
+                                </p>
+
+                                <p
+                                    id="temp-min-value"
+                                    class="text-2xl font-bold text-blue-500 mt-1"
+                                >
+                                    -- °C
+                                </p>
+                            </div>
+
+                            <div class="w-11 h-11 bg-blue-50 rounded-xl flex items-center justify-center text-xl">
+                                ❄️
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- PRECIPITAÇÃO -->
+                    <div class="stat-card bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+
+                        <div class="flex items-center justify-between">
+
+                            <div>
+                                <p class="text-xs font-semibold uppercase text-slate-400">
+                                    Precipitação
+                                </p>
+
+                                <p
+                                    id="precip-value"
+                                    class="text-2xl font-bold text-green-600 mt-1"
+                                >
+                                    -- mm
+                                </p>
+                            </div>
+
+                            <div class="w-11 h-11 bg-green-50 rounded-xl flex items-center justify-center text-xl">
+                                🌧️
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- GRÁFICO TEMPERATURA -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+
+                    <div class="flex items-center justify-between mb-5">
+
+                        <div>
+                            <h3 class="font-bold text-slate-800">
+                                Temperatura
+                            </h3>
+
+                            <p class="text-xs text-slate-500">
+                                Temperaturas máxima e mínima
+                            </p>
+                        </div>
+
+                        <span class="text-xl">
+                            🌡️
+                        </span>
+
+                    </div>
+
+                    <div class="relative h-72">
                         <canvas id="chart-temperatura"></canvas>
                     </div>
 
-                    <!-- Gráfico de Precipitação -->
-                    <div class="relative h-64 w-full">
+                </div>
+
+
+                <!-- GRÁFICO PRECIPITAÇÃO -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+
+                    <div class="flex items-center justify-between mb-5">
+
+                        <div>
+                            <h3 class="font-bold text-slate-800">
+                                Precipitação
+                            </h3>
+
+                            <p class="text-xs text-slate-500">
+                                Precipitação diária em milímetros
+                            </p>
+                        </div>
+
+                        <span class="text-xl">
+                            🌧️
+                        </span>
+
+                    </div>
+
+                    <div class="relative h-72">
                         <canvas id="chart-precipitacao"></canvas>
                     </div>
+
                 </div>
+
+            </section>
+
+        </div>
+
+    </main>
+
+
+    <!-- FOOTER -->
+    <footer class="border-t border-slate-200 bg-white mt-8">
+
+        <div class="max-w-7xl mx-auto px-4 py-5">
+
+            <div class="flex flex-col md:flex-row justify-between items-center gap-2 text-sm text-slate-500">
+
+                <p>
+                    🌱 Monitorização Agrícola
+                </p>
+
+                <p>
+                    Dados fornecidos pela NASA POWER
+                </p>
+
             </div>
 
         </div>
-    </main>
 
-    <!-- Lógica de Integração com as APIs -->
+    </footer>
+
+
     <script>
-        // 1. Inicializar o Mapa Leaflet centrado por defeito
-        const defaultLat = -15.78;
-        const defaultLon = -47.92;
-        const map = L.map('map').setView([defaultLat, defaultLon], 5);
-        
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
 
-        let marker = L.marker([defaultLat, defaultLon]).addTo(map);
+        /*
+         * ============================================
+         * CONFIGURAÇÃO INICIAL
+         * ============================================
+         */
 
-        // Instâncias Globais dos Gráficos para podermos destruí-los/recriá-los ao atualizar dados
+        const defaultLat = -8.8383;
+        const defaultLon = 13.2344;
+
+        /*
+         * Inicializar mapa
+         */
+
+        const map = L.map("map").setView(
+            [defaultLat, defaultLon],
+            6
+        );
+
+
+        /*
+         * OpenStreetMap
+         */
+
+        L.tileLayer(
+            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            {
+                attribution:
+                    "&copy; OpenStreetMap contributors"
+            }
+        ).addTo(map);
+
+
+        /*
+         * Marcador inicial
+         */
+
+        let marker = L.marker(
+            [defaultLat, defaultLon]
+        ).addTo(map);
+
+
+        /*
+         * Instâncias dos gráficos
+         */
+
         let chartTempInstance = null;
         let chartPrecipInstance = null;
 
-        // Atualizar inputs quando o utilizador clica no mapa
-        map.on('click', function(e) {
-            const lat = e.latlng.lat.toFixed(4);
-            const lon = e.latlng.lng.toFixed(4);
-            
-            document.getElementById('lat-input').value = lat;
-            document.getElementById('lon-input').value = lon;
-            
-            marker.setLatLng(e.latlng);
+
+        /*
+         * ============================================
+         * SELECIONAR LOCAL NO MAPA
+         * ============================================
+         */
+
+        map.on("click", function(event) {
+
+            const lat =
+                event.latlng.lat.toFixed(4);
+
+            const lon =
+                event.latlng.lng.toFixed(4);
+
+
+            document.getElementById(
+                "lat-input"
+            ).value = lat;
+
+
+            document.getElementById(
+                "lon-input"
+            ).value = lon;
+
+
+            marker.setLatLng(
+                event.latlng
+            );
+
         });
 
-        // 2. Função para formatar datas (Últimos 15 dias no formato AAAAMMDD que a NASA exige)
-        function obterIntervaloDatas() {
-            const hoje = new Date();
-            const dataInicio = new Date();
-            dataInicio.setDate(hoje.getDate() - 15);
 
-            const formatar = (d) => d.toISOString().split('T')[0].replace(/-/g, '');
-            return { start: formatar(dataInicio), end: formatar(hoje) };
+        /*
+         * ============================================
+         * INTERVALO DE DATAS
+         * ============================================
+         */
+
+        function obterIntervaloDatas() {
+
+            const hoje = new Date();
+
+            const dataInicio = new Date();
+
+            dataInicio.setDate(
+                hoje.getDate() - 15
+            );
+
+
+            function formatarData(data) {
+
+                const ano =
+                    data.getFullYear();
+
+                const mes =
+                    String(
+                        data.getMonth() + 1
+                    ).padStart(2, "0");
+
+                const dia =
+                    String(
+                        data.getDate()
+                    ).padStart(2, "0");
+
+
+                return `${ano}${mes}${dia}`;
+            }
+
+
+            return {
+                start: formatarData(dataInicio),
+                end: formatarData(hoje)
+            };
         }
 
-        // 3. Consumir a NASA POWER API e Renderizar os Gráficos
-        async function fetchNasaData() {
-            const lat = document.getElementById('lat-input').value;
-            const lon = document.getElementById('lon-input').value;
-            const datas = obterIntervaloDatas();
-            
-            const loader = document.getElementById('status-loading');
-            loader.classList.remove('hidden');
 
-            // Parâmetros: PRECTOTCORR (Precipitação), T2M_MAX (Temp Máxima), T2M_MIN (Temp Mínima)
-            const params = 'PRECTOTCORR,T2M_MAX,T2M_MIN';
-            const url = `https://nasa.gov{params}&community=AG&longitude=${lon}&latitude=${lat}&start=${datas.start}&end=${datas.end}&format=JSON`;
+        /*
+         * ============================================
+         * ELEMENTOS DE INTERFACE
+         * ============================================
+         */
+
+        const loader =
+            document.getElementById(
+                "status-loading"
+            );
+
+
+        const errorBox =
+            document.getElementById(
+                "status-error"
+            );
+
+
+        /*
+         * Mostrar erro
+         */
+
+        function mostrarErro(mensagem) {
+
+            errorBox.textContent =
+                "⚠️ " + mensagem;
+
+            errorBox.classList.remove(
+                "hidden"
+            );
+        }
+
+
+        /*
+         * Esconder erro
+         */
+
+        function esconderErro() {
+
+            errorBox.classList.add(
+                "hidden"
+            );
+
+            errorBox.textContent = "";
+        }
+
+
+        /*
+         * ============================================
+         * BUSCAR DADOS NASA POWER
+         * ============================================
+         */
+
+        async function fetchNasaData() {
+
+            const lat =
+                document.getElementById(
+                    "lat-input"
+                ).value;
+
+
+            const lon =
+                document.getElementById(
+                    "lon-input"
+                ).value;
+
+
+            const datas =
+                obterIntervaloDatas();
+
+
+            esconderErro();
+
+
+            loader.classList.remove(
+                "hidden"
+            );
+
+
+            /*
+             * Parâmetros da NASA POWER
+             *
+             * PRECTOTCORR = precipitação
+             * T2M_MAX     = temperatura máxima
+             * T2M_MIN     = temperatura mínima
+             */
+
+            const params =
+                "PRECTOTCORR,T2M_MAX,T2M_MIN";
+
+
+            /*
+             * Endpoint oficial NASA POWER
+             */
+
+            const url =
+                `https://power.larc.nasa.gov/api/temporal/daily/point?parameters=${params}&community=AG&longitude=${lon}&latitude=${lat}&start=${datas.start}&end=${datas.end}&format=JSON`;
+
 
             try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error('Erro ao contactar a API da NASA');
-                const resJson = await response.json();
-                
-                const dados = resJson.properties.parameter;
-                renderizarGraficos(dados);
+
+                const response =
+                    await fetch(url);
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        `Erro HTTP ${response.status}`
+                    );
+
+                }
+
+
+                const data =
+                    await response.json();
+
+
+                if (
+                    !data.properties ||
+                    !data.properties.parameter
+                ) {
+
+                    throw new Error(
+                        "A NASA não devolveu dados válidos."
+                    );
+
+                }
+
+
+                const dados =
+                    data.properties.parameter;
+
+
+                renderizarGraficos(
+                    dados
+                );
+
+
             } catch (error) {
-                alert('Erro ao carregar dados da NASA: ' + error.message);
+
+                console.error(
+                    "Erro NASA POWER:",
+                    error
+                );
+
+
+                mostrarErro(
+                    "Não foi possível carregar os dados da NASA. Verifique a ligação à Internet e tente novamente."
+                );
+
+
             } finally {
-                loader.classList.add('hidden');
+
+                loader.classList.add(
+                    "hidden"
+                );
+
             }
+
         }
 
-        // 4. Construção dos Gráficos com Chart.js
-        function renderizarGraficos(dados) {
-            // Extrair as datas e os valores dos eixos
-            const datasFormatadas = Object.keys(dados.T2M_MAX).map(dataStr => {
-                // Transforma '20261001' em '01/10'
-                return `${dataStr.substring(6,8)}/${dataStr.substring(4,6)}`;
-            });
-            
-            const tMax = Object.values(dados.T2M_MAX);
-            const tMin = Object.values(dados.T2M_MIN);
-            const precip = Object.values(dados.PRECTOTCORR);
 
-            // Destruir gráficos antigos se já existirem na memória
-            if (chartTempInstance) chartTempInstance.destroy();
-            if (chartPrecipInstance) chartPrecipInstance.destroy();
+        /*
+         * ============================================
+         * RENDERIZAR GRÁFICOS
+         * ============================================
+         */
 
-            // Gráfico de Temperaturas
-            const ctxTemp = document.getElementById('chart-temperatura').getContext('2d');
-            chartTempInstance = new Chart(ctxTemp, {
-                type: 'line',
-                data: {
-                    labels: datasFormatadas,
-                    datasets: [
-                        { label: 'Temp. Máxima (°C)', data: tMax, borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', tension: 0.3 },
-                        { label: 'Temp. Mínima (°C)', data: tMin, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', tension: 0.3 }
-                    ]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
+        function renderizarGraficos(
+            dados
+        ) {
 
-            // Gráfico de Precipitação
-            const ctxPrecip = document.getElementById('chart-precipitacao').getContext('2d');
-            chartPrecipInstance = new Chart(ctxPrecip, {
-                type: 'bar',
-                data: {
-                    labels: datasFormatadas,
-                    datasets: [{ label: 'Precipitação Diária (mm)', data: precip, backgroundColor: '#10b981' }]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
+            const datas =
+                Object.keys(
+                    dados.T2M_MAX
+                );
+
+
+            /*
+             * Formatar datas
+             */
+
+            const datasFormatadas =
+                datas.map(
+                    dataStr => {
+
+                        const dia =
+                            dataStr.substring(
+                                6,
+                                8
+                            );
+
+                        const mes =
+                            dataStr.substring(
+                                4,
+                                6
+                            );
+
+
+                        return `${dia}/${mes}`;
+
+                    }
+                );
+
+
+            /*
+             * Valores
+             */
+
+            const tMax =
+                Object.values(
+                    dados.T2M_MAX
+                );
+
+
+            const tMin =
+                Object.values(
+                    dados.T2M_MIN
+                );
+
+
+            const precip =
+                Object.values(
+                    dados.PRECTOTCORR
+                );
+
+
+            /*
+             * ========================================
+             * RESUMO
+             * ========================================
+             */
+
+            const maxTemperatura =
+                Math.max(
+                    ...tMax.filter(
+                        Number.isFinite
+                    )
+                );
+
+
+            const minTemperatura =
+                Math.min(
+                    ...tMin.filter(
+                        Number.isFinite
+                    )
+                );
+
+
+            const totalPrecipitacao =
+                precip
+                    .filter(
+                        Number.isFinite
+                    )
+                    .reduce(
+                        (total, valor) =>
+                            total + valor,
+                        0
+                    );
+
+
+            document.getElementById(
+                "temp-max-value"
+            ).textContent =
+                `${maxTemperatura.toFixed(1)} °C`;
+
+
+            document.getElementById(
+                "temp-min-value"
+            ).textContent =
+                `${minTemperatura.toFixed(1)} °C`;
+
+
+            document.getElementById(
+                "precip-value"
+            ).textContent =
+                `${totalPrecipitacao.toFixed(1)} mm`;
+
+
+            /*
+             * ========================================
+             * DESTRUIR GRÁFICOS ANTIGOS
+             * ========================================
+             */
+
+            if (chartTempInstance) {
+
+                chartTempInstance.destroy();
+
+            }
+
+
+            if (chartPrecipInstance) {
+
+                chartPrecipInstance.destroy();
+
+            }
+
+
+            /*
+             * ========================================
+             * GRÁFICO DE TEMPERATURA
+             * ========================================
+             */
+
+            const ctxTemp =
+                document
+                    .getElementById(
+                        "chart-temperatura"
+                    )
+                    .getContext("2d");
+
+
+            chartTempInstance =
+                new Chart(
+                    ctxTemp,
+                    {
+
+                        type: "line",
+
+                        data: {
+
+                            labels:
+                                datasFormatadas,
+
+                            datasets: [
+
+                                {
+
+                                    label:
+                                        "Temperatura máxima (°C)",
+
+                                    data:
+                                        tMax,
+
+                                    borderColor:
+                                        "#ef4444",
+
+                                    backgroundColor:
+                                        "rgba(239, 68, 68, 0.10)",
+
+                                    borderWidth:
+                                        2,
+
+                                    pointRadius:
+                                        3,
+
+                                    pointHoverRadius:
+                                        5,
+
+                                    tension:
+                                        0.35,
+
+                                    fill:
+                                        true
+
+                                },
+
+                                {
+
+                                    label:
+                                        "Temperatura mínima (°C)",
+
+                                    data:
+                                        tMin,
+
+                                    borderColor:
+                                        "#3b82f6",
+
+                                    backgroundColor:
+                                        "rgba(59, 130, 246, 0.10)",
+
+                                    borderWidth:
+                                        2,
+
+                                    pointRadius:
+                                        3,
+
+                                    pointHoverRadius:
+                                        5,
+
+                                    tension:
+                                        0.35,
+
+                                    fill:
+                                        true
+
+                                }
+
+                            ]
+
+                        },
+
+                        options: {
+
+                            responsive:
+                                true,
+
+                            maintainAspectRatio:
+                                false,
+
+                            interaction: {
+
+                                mode:
+                                    "index",
+
+                                intersect:
+                                    false
+
+                            },
+
+                            plugins: {
+
+                                legend: {
+
+                                    position:
+                                        "top"
+
+                                }
+
+                            },
+
+                            scales: {
+
+                                y: {
+
+                                    title: {
+
+                                        display:
+                                            true,
+
+                                        text:
+                                            "°C"
+
+                                    }
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+                );
+
+
+            /*
+             * ========================================
+             * GRÁFICO DE PRECIPITAÇÃO
+             * ========================================
+             */
+
+            const ctxPrecip =
+                document
+                    .getElementById(
+                        "chart-precipitacao"
+                    )
+                    .getContext("2d");
+
+
+            chartPrecipInstance =
+                new Chart(
+                    ctxPrecip,
+                    {
+
+                        type:
+                            "bar",
+
+                        data: {
+
+                            labels:
+                                datasFormatadas,
+
+                            datasets: [
+
+                                {
+
+                                    label:
+                                        "Precipitação diária (mm)",
+
+                                    data:
+                                        precip,
+
+                                    backgroundColor:
+                                        "rgba(16, 185, 129, 0.75)",
+
+                                    borderColor:
+                                        "#059669",
+
+                                    borderWidth:
+                                        1,
+
+                                    borderRadius:
+                                        5
+
+                                }
+
+                            ]
+
+                        },
+
+                        options: {
+
+                            responsive:
+                                true,
+
+                            maintainAspectRatio:
+                                false,
+
+                            plugins: {
+
+                                legend: {
+
+                                    position:
+                                        "top"
+
+                                }
+
+                            },
+
+                            scales: {
+
+                                y: {
+
+                                    beginAtZero:
+                                        true,
+
+                                    title: {
+
+                                        display:
+                                            true,
+
+                                        text:
+                                            "mm"
+
+                                    }
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+                );
+
         }
 
-        // Event Listeners
-        document.getElementById('btn-buscar').addEventListener('click', fetchNasaData);
-        
-        // Fazer uma pesquisa automática ao abrir a aplicação
-        window.onload = fetchNasaData;
+
+        /*
+         * ============================================
+         * BOTÃO
+         * ============================================
+         */
+
+        document
+            .getElementById(
+                "btn-buscar"
+            )
+            .addEventListener(
+                "click",
+                fetchNasaData
+            );
+
+
+        /*
+         * ============================================
+         * CARREGAR AUTOMATICAMENTE
+         * ============================================
+         */
+
+        window.addEventListener(
+            "load",
+            function() {
+
+                fetchNasaData();
+
+            }
+        );
+
     </script>
+
 </body>
 </html>
-
+```
