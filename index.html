@@ -3,176 +3,209 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#07150f">
+  <meta name="theme-color" content="#0b1712">
+  <title>AgroResilience</title>
 
-  <title>AgroResilience — NASA Agricultural Decision Support</title>
-
-  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Leaflet -->
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
   />
 
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ["Inter", "system-ui", "sans-serif"]
-          },
-          colors: {
-            forest: {
-              950: "#07150f",
-              900: "#0b2118",
-              800: "#103323",
-              700: "#174b31",
-              600: "#1d6b43",
-              500: "#29965a",
-              400: "#55c879",
-              300: "#8ee5a5",
-              100: "#dff8e5"
-            }
-          }
-        }
-      }
-    };
-  </script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <style>
     * {
-      scrollbar-width: thin;
-      scrollbar-color: #24553b transparent;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
     }
 
     body {
+      margin: 0;
+      background: #07110d;
+      color: #edf7f0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system,
+        BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    ::selection {
+      background: #7ee787;
+      color: #07110d;
+    }
+
+    .app-shell {
+      min-height: 100vh;
       background:
-        radial-gradient(circle at 15% 0%, rgba(41,150,90,.15), transparent 28%),
-        radial-gradient(circle at 90% 10%, rgba(116,185,255,.10), transparent 25%),
-        #07150f;
+        radial-gradient(circle at 80% 0%, rgba(67, 160, 71, .16), transparent 28%),
+        radial-gradient(circle at 10% 20%, rgba(34, 197, 94, .08), transparent 25%),
+        #07110d;
     }
 
     .glass {
-      background: rgba(13, 34, 24, .78);
-      border: 1px solid rgba(142,229,165,.10);
+      background: rgba(13, 29, 21, .82);
+      border: 1px solid rgba(148, 163, 184, .12);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
     }
 
-    .glass-light {
-      background: rgba(255,255,255,.055);
-      border: 1px solid rgba(255,255,255,.08);
+    .card {
+      border-radius: 24px;
     }
 
-    .gradient-text {
-      background: linear-gradient(90deg, #8ee5a5, #ffffff, #82cfff);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
+    .nav-item {
+      transition: .2s ease;
     }
 
-    .nav-active {
-      background: rgba(85,200,121,.13);
-      color: #8ee5a5;
-      border: 1px solid rgba(85,200,121,.18);
+    .nav-item.active {
+      color: #8df0a1;
+      background: rgba(74, 222, 128, .09);
     }
 
-    .map-card {
-      background:
-        linear-gradient(rgba(9,31,21,.55), rgba(9,31,21,.75)),
-        url("https://tile.openstreetmap.org/5/15/15.png");
-      background-size: cover;
+    .screen {
+      display: none;
+      animation: fadeIn .25s ease;
     }
 
-    #map {
-      height: 330px;
-      width: 100%;
-      border-radius: 22px;
-      overflow: hidden;
+    .screen.active {
+      display: block;
     }
 
-    .leaflet-control-attribution {
-      font-size: 9px;
-    }
-
-    .metric-bar {
-      height: 7px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.07);
-      overflow: hidden;
-    }
-
-    .metric-fill {
-      height: 100%;
-      border-radius: inherit;
-      transition: width .7s ease;
-    }
-
-    .crop-card {
-      transition: .25s ease;
-      cursor: pointer;
-    }
-
-    .crop-card:hover {
-      transform: translateY(-3px);
-      border-color: rgba(142,229,165,.3);
-    }
-
-    .crop-card.selected {
-      border-color: rgba(85,200,121,.55);
-      background: rgba(41,150,90,.12);
-      box-shadow: 0 0 0 1px rgba(85,200,121,.15);
-    }
-
-    .scenario-card {
-      transition: .25s ease;
-    }
-
-    .scenario-card:hover {
-      transform: translateY(-2px);
-    }
-
-    .pulse-dot {
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0%,100% {
-        box-shadow: 0 0 0 0 rgba(85,200,121,.35);
-      }
-      50% {
-        box-shadow: 0 0 0 9px rgba(85,200,121,0);
-      }
-    }
-
-    .fade-in {
-      animation: fade .45s ease both;
-    }
-
-    @keyframes fade {
+    @keyframes fadeIn {
       from {
         opacity: 0;
-        transform: translateY(8px);
+        transform: translateY(6px);
       }
+
       to {
         opacity: 1;
         transform: translateY(0);
       }
     }
 
-    .section {
-      display: none;
+    .hero-gradient {
+      background:
+        linear-gradient(135deg, rgba(22, 101, 52, .85), rgba(8, 24, 16, .95)),
+        radial-gradient(circle at top right, rgba(134, 239, 172, .25), transparent 35%);
     }
 
-    .section.active {
-      display: block;
+    .primary-btn {
+      background: linear-gradient(135deg, #65d982, #2da95a);
+      color: #06110a;
+      transition: .2s ease;
+      box-shadow: 0 10px 30px rgba(74, 222, 128, .13);
+    }
+
+    .primary-btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+    }
+
+    .secondary-btn {
+      background: rgba(255,255,255,.045);
+      border: 1px solid rgba(255,255,255,.09);
+      transition: .2s ease;
+    }
+
+    .secondary-btn:hover {
+      background: rgba(255,255,255,.08);
+    }
+
+    .choice-btn {
+      transition: .2s ease;
+    }
+
+    .choice-btn.selected {
+      border-color: rgba(74, 222, 128, .8);
+      background: rgba(34, 197, 94, .12);
+      box-shadow: 0 0 0 1px rgba(74, 222, 128, .15);
+    }
+
+    .progress-fill {
+      transition: width .5s ease;
+    }
+
+    .chat-user {
+      background: #174c2d;
+      border-radius: 18px 18px 4px 18px;
+    }
+
+    .chat-bot {
+      background: rgba(255,255,255,.055);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 18px 18px 18px 4px;
+    }
+
+    #map,
+    #farmMap {
+      min-height: 280px;
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .leaflet-container {
+      background: #0d1c14;
+    }
+
+    input[type="range"] {
+      accent-color: #4ade80;
+    }
+
+    .crop-card {
+      transition: .2s ease;
+      cursor: pointer;
+    }
+
+    .crop-card.selected {
+      border-color: rgba(74, 222, 128, .75);
+      background: rgba(34, 197, 94, .1);
+      transform: translateY(-2px);
+    }
+
+    .rotation-item {
+      position: relative;
+    }
+
+    .rotation-item:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      right: -17px;
+      top: 50%;
+      width: 32px;
+      height: 1px;
+      background: rgba(148,163,184,.25);
+    }
+
+    .score-ring {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle, #0b1712 57%, transparent 58%),
+        conic-gradient(#68df89 78%, rgba(255,255,255,.08) 0);
+    }
+
+    .risk-low {
+      color: #7ee787;
+    }
+
+    .risk-medium {
+      color: #facc15;
+    }
+
+    .risk-high {
+      color: #fb7185;
     }
 
     .toast {
-      transform: translateY(130px);
+      transform: translateY(120px);
       opacity: 0;
+      pointer-events: none;
       transition: .3s ease;
     }
 
@@ -180,367 +213,305 @@
       transform: translateY(0);
       opacity: 1;
     }
+
+    .mobile-bottom {
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    @media (min-width: 1024px) {
+      .desktop-sidebar {
+        display: flex;
+      }
+
+      .mobile-bottom {
+        display: none;
+      }
+
+      .main-area {
+        margin-left: 260px;
+      }
+    }
+
+    @media (max-width: 1023px) {
+      .desktop-sidebar {
+        display: none;
+      }
+
+      .main-area {
+        margin-left: 0;
+        padding-bottom: 88px;
+      }
+    }
   </style>
 </head>
 
-<body class="text-white min-h-screen font-sans">
+<body>
 
-  <!-- APP SHELL -->
-  <div class="max-w-7xl mx-auto min-h-screen flex">
+<div class="app-shell">
 
-    <!-- SIDEBAR DESKTOP -->
-    <aside class="hidden lg:flex w-72 shrink-0 p-5 sticky top-0 h-screen">
-      <div class="glass rounded-[28px] w-full p-5 flex flex-col">
+  <!-- SIDEBAR -->
+  <aside class="desktop-sidebar fixed left-0 top-0 bottom-0 w-[260px] p-5 flex-col border-r border-white/5 bg-[#08130e] z-40">
 
-        <!-- Logo -->
-        <div class="flex items-center gap-3 px-2 mb-9">
-          <div class="w-11 h-11 rounded-2xl bg-forest-600/30 border border-forest-400/20 flex items-center justify-center">
-            <span class="text-2xl">🌱</span>
-          </div>
-
-          <div>
-            <div class="font-bold tracking-tight">AgroResilience</div>
-            <div class="text-[10px] text-white/40 uppercase tracking-[.2em]">
-              NASA Earth Data
-            </div>
-          </div>
-        </div>
-
-        <!-- Navigation -->
-        <nav class="space-y-2">
-
-          <button
-            onclick="showSection('dashboard')"
-            data-nav="dashboard"
-            class="nav-item nav-active w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm"
-          >
-            <span>⌂</span>
-            <span>Dashboard</span>
-          </button>
-
-          <button
-            onclick="showSection('farm')"
-            data-nav="farm"
-            class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-white/55"
-          >
-            <span>⌖</span>
-            <span>Minha propriedade</span>
-          </button>
-
-          <button
-            onclick="showSection('rotation')"
-            data-nav="rotation"
-            class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-white/55"
-          >
-            <span>↻</span>
-            <span>Rotação de culturas</span>
-          </button>
-
-          <button
-            onclick="showSection('scenarios')"
-            data-nav="scenarios"
-            class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-white/55"
-          >
-            <span>◈</span>
-            <span>Cenários</span>
-          </button>
-
-          <button
-            onclick="showSection('insights')"
-            data-nav="insights"
-            class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-white/55"
-          >
-            <span>✦</span>
-            <span>Insights</span>
-          </button>
-
-        </nav>
-
-        <!-- NASA -->
-        <div class="mt-auto">
-
-          <div class="glass-light rounded-2xl p-4 mb-4">
-            <div class="flex items-center gap-2 mb-2">
-              <span class="w-2 h-2 bg-forest-400 rounded-full pulse-dot"></span>
-              <span class="text-xs text-forest-300">NASA DATA ONLINE</span>
-            </div>
-
-            <p class="text-xs text-white/45 leading-relaxed">
-              Dados meteorológicos e ambientais utilizados para apoiar a análise agrícola.
-            </p>
-          </div>
-
-          <div class="text-[10px] text-white/25 px-2">
-            AgroResilience v0.1
-          </div>
-        </div>
-
+    <div class="flex items-center gap-3 px-2 py-3 mb-8">
+      <div class="w-11 h-11 rounded-2xl bg-green-400/10 border border-green-300/10 flex items-center justify-center text-2xl">
+        🌱
       </div>
-    </aside>
+
+      <div>
+        <div class="font-black tracking-tight">AgroResilience</div>
+        <div class="text-xs text-slate-500">Climate intelligence</div>
+      </div>
+    </div>
+
+    <nav class="space-y-2">
+
+      <button onclick="showScreen('home')" data-nav="home"
+        class="nav-item active w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-left">
+        <span>⌂</span>
+        <span>Início</span>
+      </button>
+
+      <button onclick="showScreen('farm')" data-nav="farm"
+        class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-left text-slate-400">
+        <span>◉</span>
+        <span>Minha propriedade</span>
+      </button>
+
+      <button onclick="showScreen('rotation')" data-nav="rotation"
+        class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-left text-slate-400">
+        <span>↻</span>
+        <span>Rotação</span>
+      </button>
+
+      <button onclick="showScreen('scenarios')" data-nav="scenarios"
+        class="nav-item w-full flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-left text-slate-400">
+        <span>◈</span>
+        <span>E se...?</span>
+      </button>
+
+      <button onclick="showScreen('assistant')" data-nav="assistant"
+        class="nav-item w-full flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-left text-slate-400">
+        <span>✦</span>
+        <span>Assistente</span>
+      </button>
+
+    </nav>
+
+    <div class="mt-auto">
+      <div class="glass card p-4">
+        <div class="text-xs text-slate-500 mb-1">Dados ambientais</div>
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-green-400"></span>
+          <span class="text-sm">NASA POWER conectado</span>
+        </div>
+      </div>
+    </div>
+  </aside>
 
 
-    <!-- MAIN -->
-    <main class="flex-1 p-4 lg:p-7 pb-28 lg:pb-7">
+  <!-- MAIN -->
+  <main class="main-area min-h-screen">
 
-      <!-- MOBILE HEADER -->
-      <header class="lg:hidden flex items-center justify-between mb-5">
+    <!-- TOPBAR -->
+    <header class="sticky top-0 z-30 px-4 md:px-8 py-4 bg-[#07110d]/85 backdrop-blur-xl border-b border-white/5">
 
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-forest-600/30 flex items-center justify-center">
+      <div class="max-w-7xl mx-auto flex items-center justify-between">
+
+        <div class="lg:hidden flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-green-400/10 flex items-center justify-center">
             🌱
           </div>
 
           <div>
-            <div class="font-bold">AgroResilience</div>
-            <div class="text-[9px] text-white/35 uppercase tracking-widest">
-              NASA Earth Data
-            </div>
+            <div class="font-bold text-sm">AgroResilience</div>
+            <div class="text-[10px] text-slate-500">Climate intelligence</div>
           </div>
         </div>
 
-        <button
-          onclick="showSection('farm')"
-          class="w-10 h-10 rounded-xl glass flex items-center justify-center"
-        >
-          ⚙
+        <div class="hidden lg:block">
+          <div id="pageTitle" class="font-bold text-lg">Início</div>
+          <div id="pageSubtitle" class="text-xs text-slate-500">
+            Acompanhe a sua propriedade
+          </div>
+        </div>
+
+        <button onclick="showScreen('assistant')"
+          class="w-11 h-11 rounded-full secondary-btn flex items-center justify-center">
+          ✦
         </button>
 
-      </header>
+      </div>
+    </header>
 
 
-      <!-- ================================================= -->
-      <!-- DASHBOARD -->
-      <!-- ================================================= -->
+    <div class="max-w-7xl mx-auto px-4 md:px-8 py-6">
 
-      <section id="dashboard" class="section active fade-in">
 
-        <!-- HERO -->
-        <div class="mb-7">
+      <!-- HOME -->
+      <section id="screen-home" class="screen active">
 
-          <div class="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-5">
+        <div class="hero-gradient card p-6 md:p-10 relative overflow-hidden">
 
-            <div>
-              <div class="text-xs uppercase tracking-[.25em] text-forest-300 mb-3">
-                Climate-smart agriculture
-              </div>
+          <div class="absolute -right-20 -top-20 w-64 h-64 rounded-full bg-green-300/10 blur-3xl"></div>
 
-              <h1 class="text-3xl md:text-5xl font-bold tracking-tight leading-tight">
-                Cultive hoje pensando<br>
-                <span class="gradient-text">no clima de amanhã.</span>
-              </h1>
+          <div class="relative max-w-3xl">
 
-              <p class="text-white/45 mt-4 max-w-2xl text-sm md:text-base leading-relaxed">
-                Explore estratégias de rotação de culturas usando dados ambientais,
-                características da propriedade e as prioridades do agricultor.
-              </p>
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-green-200 mb-5">
+              <span class="w-2 h-2 rounded-full bg-green-300"></span>
+              Dados climáticos atualizados
             </div>
 
-            <button
-              onclick="showSection('rotation')"
-              class="bg-forest-500 hover:bg-forest-400 transition rounded-2xl px-5 py-3 font-semibold text-sm whitespace-nowrap"
-            >
-              + Criar estratégia
+            <h1 class="text-3xl md:text-5xl font-black tracking-tight leading-tight">
+              Olá. Como posso ajudar
+              <span class="text-green-300">a sua propriedade</span>
+              hoje?
+            </h1>
+
+            <p class="mt-4 text-slate-300 max-w-2xl leading-relaxed">
+              Explore o clima, a água e a saúde do solo para tomar decisões
+              agrícolas mais resilientes.
+            </p>
+
+          </div>
+        </div>
+
+
+        <!-- QUICK ACTIONS -->
+        <div class="mt-6">
+
+          <div class="text-sm text-slate-500 mb-3">O que pretende fazer?</div>
+
+          <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
+
+            <button onclick="startConcern('água')"
+              class="glass card p-4 text-left hover:border-green-400/30 transition">
+              <div class="text-2xl mb-3">💧</div>
+              <div class="font-bold text-sm">Preocupa-me a água</div>
+              <div class="text-xs text-slate-500 mt-1">Disponibilidade e stress hídrico</div>
+            </button>
+
+            <button onclick="startConcern('calor')"
+              class="glass card p-4 text-left hover:border-green-400/30 transition">
+              <div class="text-2xl mb-3">🌡️</div>
+              <div class="font-bold text-sm">O calor aumentou</div>
+              <div class="text-xs text-slate-500 mt-1">Risco de calor extremo</div>
+            </button>
+
+            <button onclick="startConcern('solo')"
+              class="glass card p-4 text-left hover:border-green-400/30 transition">
+              <div class="text-2xl mb-3">🌱</div>
+              <div class="font-bold text-sm">Quero melhorar o solo</div>
+              <div class="text-xs text-slate-500 mt-1">Saúde e conservação</div>
+            </button>
+
+            <button onclick="showScreen('rotation')"
+              class="glass card p-4 text-left hover:border-green-400/30 transition">
+              <div class="text-2xl mb-3">↻</div>
+              <div class="font-bold text-sm">Planear rotação</div>
+              <div class="text-xs text-slate-500 mt-1">Teste diferentes culturas</div>
+            </button>
+
+            <button onclick="analyzeFarm()"
+              class="glass card p-4 text-left hover:border-green-400/30 transition">
+              <div class="text-2xl mb-3">🛰️</div>
+              <div class="font-bold text-sm">Analisar propriedade</div>
+              <div class="text-xs text-slate-500 mt-1">Usar dados ambientais</div>
             </button>
 
           </div>
-
         </div>
 
 
-        <!-- LOCATION / STATUS -->
-        <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-5">
+        <!-- ANALYSIS -->
+        <div class="grid lg:grid-cols-3 gap-5 mt-6">
 
-          <div class="xl:col-span-2 glass rounded-3xl p-5">
+          <div class="glass card p-6 lg:col-span-2">
 
-            <div class="flex items-center justify-between mb-5">
+            <div class="flex items-start justify-between">
 
               <div>
-                <div class="text-xs text-white/35 uppercase tracking-widest">
-                  Propriedade monitorizada
+                <div class="text-xs uppercase tracking-wider text-slate-500">
+                  Estado atual
                 </div>
 
-                <div class="text-xl font-semibold mt-1">
-                  Fazenda Luanda
-                </div>
-
-                <div class="text-xs text-white/35 mt-1">
-                  Angola · -8.8383, 13.2344
-                </div>
-              </div>
-
-              <div class="flex items-center gap-2 text-xs text-forest-300">
-                <span class="w-2 h-2 rounded-full bg-forest-400"></span>
-                Atualizado agora
-              </div>
-
-            </div>
-
-            <div id="map"></div>
-
-          </div>
-
-
-          <!-- RESILIENCE SCORE -->
-          <div class="glass rounded-3xl p-5 relative overflow-hidden">
-
-            <div class="absolute -right-16 -top-16 w-44 h-44 rounded-full bg-forest-500/10 blur-2xl"></div>
-
-            <div class="text-xs text-white/35 uppercase tracking-widest">
-              Índice de resiliência
-            </div>
-
-            <div class="flex items-end gap-2 mt-3">
-              <div id="resilienceScore" class="text-6xl font-bold">78</div>
-              <div class="text-white/30 mb-2">/100</div>
-            </div>
-
-            <div class="text-sm text-forest-300 mt-1">
-              Boa capacidade de adaptação
-            </div>
-
-            <div class="metric-bar mt-5">
-              <div
-                class="metric-fill bg-forest-400"
-                style="width:78%"
-              ></div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3 mt-6">
-
-              <div class="glass-light rounded-2xl p-3">
-                <div class="text-[10px] text-white/35">ÁGUA</div>
-                <div class="text-xl font-semibold mt-1">71</div>
-                <div class="text-[10px] text-white/35">/100</div>
-              </div>
-
-              <div class="glass-light rounded-2xl p-3">
-                <div class="text-[10px] text-white/35">SOLO</div>
-                <div class="text-xl font-semibold mt-1">84</div>
-                <div class="text-[10px] text-white/35">/100</div>
-              </div>
-
-              <div class="glass-light rounded-2xl p-3">
-                <div class="text-[10px] text-white/35">CALOR</div>
-                <div class="text-xl font-semibold mt-1">72</div>
-                <div class="text-[10px] text-white/35">/100</div>
-              </div>
-
-              <div class="glass-light rounded-2xl p-3">
-                <div class="text-[10px] text-white/35">ROTAÇÃO</div>
-                <div class="text-xl font-semibold mt-1">86</div>
-                <div class="text-[10px] text-white/35">/100</div>
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-
-        <!-- NASA METRICS -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
-
-          <div class="glass rounded-2xl p-4">
-            <div class="flex justify-between">
-              <span class="text-xs text-white/35">TEMPERATURA</span>
-              <span>🌡️</span>
-            </div>
-
-            <div class="text-2xl font-bold mt-3">
-              <span id="tempValue">29.4</span>°C
-            </div>
-
-            <div class="text-[11px] text-red-300 mt-1">
-              +2.1°C acima da média
-            </div>
-          </div>
-
-
-          <div class="glass rounded-2xl p-4">
-            <div class="flex justify-between">
-              <span class="text-xs text-white/35">PRECIPITAÇÃO</span>
-              <span>🌧️</span>
-            </div>
-
-            <div class="text-2xl font-bold mt-3">
-              <span id="rainValue">43</span> mm
-            </div>
-
-            <div class="text-[11px] text-yellow-300 mt-1">
-              Abaixo do esperado
-            </div>
-          </div>
-
-
-          <div class="glass rounded-2xl p-4">
-            <div class="flex justify-between">
-              <span class="text-xs text-white/35">STRESS HÍDRICO</span>
-              <span>💧</span>
-            </div>
-
-            <div class="text-2xl font-bold mt-3">
-              Moderado
-            </div>
-
-            <div class="text-[11px] text-white/35 mt-1">
-              Monitorização necessária
-            </div>
-          </div>
-
-
-          <div class="glass rounded-2xl p-4">
-            <div class="flex justify-between">
-              <span class="text-xs text-white/35">VEGETAÇÃO</span>
-              <span>🌿</span>
-            </div>
-
-            <div class="text-2xl font-bold mt-3">
-              0.68
-            </div>
-
-            <div class="text-[11px] text-forest-300 mt-1">
-              Estado saudável
-            </div>
-          </div>
-
-        </div>
-
-
-        <!-- RECOMMENDATION -->
-        <div class="glass rounded-3xl p-5 mb-5">
-
-          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-
-            <div class="flex gap-4">
-
-              <div class="w-12 h-12 rounded-2xl bg-forest-500/15 flex items-center justify-center text-2xl">
-                ✦
-              </div>
-
-              <div>
-                <div class="text-xs uppercase tracking-widest text-forest-300">
-                  Insight prioritário
-                </div>
-
-                <h2 class="text-lg font-semibold mt-1">
-                  Aumentar a diversidade da rotação
+                <h2 class="text-xl font-bold mt-1">
+                  Resiliência da propriedade
                 </h2>
-
-                <p class="text-sm text-white/45 mt-1 max-w-2xl">
-                  Com o atual padrão de temperatura e precipitação,
-                  uma rotação com maior diversidade pode melhorar a
-                  resiliência e reduzir a pressão sobre os recursos hídricos.
-                </p>
               </div>
+
+              <span class="px-3 py-1 rounded-full bg-green-400/10 text-green-300 text-xs">
+                Boa
+              </span>
 
             </div>
 
-            <button
-              onclick="showSection('scenarios')"
-              class="glass-light hover:bg-white/10 transition rounded-xl px-4 py-3 text-sm whitespace-nowrap"
-            >
-              Ver cenários →
+            <div class="flex flex-col md:flex-row items-center gap-8 mt-7">
+
+              <div class="score-ring">
+                <div class="text-center">
+                  <div class="text-3xl font-black">78</div>
+                  <div class="text-[10px] text-slate-500">/100</div>
+                </div>
+              </div>
+
+              <div class="flex-1 w-full space-y-4">
+
+                <div>
+                  <div class="flex justify-between text-xs mb-2">
+                    <span class="text-slate-400">Água</span>
+                    <span>72%</span>
+                  </div>
+                  <div class="h-2 bg-white/5 rounded-full overflow-hidden">
+                    <div class="progress-fill h-full bg-blue-400 rounded-full" style="width:72%"></div>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="flex justify-between text-xs mb-2">
+                    <span class="text-slate-400">Solo</span>
+                    <span>81%</span>
+                  </div>
+                  <div class="h-2 bg-white/5 rounded-full overflow-hidden">
+                    <div class="progress-fill h-full bg-green-400 rounded-full" style="width:81%"></div>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="flex justify-between text-xs mb-2">
+                    <span class="text-slate-400">Clima</span>
+                    <span>76%</span>
+                  </div>
+                  <div class="h-2 bg-white/5 rounded-full overflow-hidden">
+                    <div class="progress-fill h-full bg-yellow-300 rounded-full" style="width:76%"></div>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+
+
+          <div class="glass card p-6">
+
+            <div class="text-xs uppercase tracking-wider text-slate-500">
+              Principal insight
+            </div>
+
+            <div class="text-3xl mt-5">💧</div>
+
+            <h3 class="font-bold text-lg mt-3">
+              A água merece atenção
+            </h3>
+
+            <p class="text-sm text-slate-400 leading-relaxed mt-2">
+              Os padrões recentes indicam que a gestão da água deve ser
+              considerada ao planear a próxima rotação.
+            </p>
+
+            <button onclick="showScreen('scenarios')"
+              class="secondary-btn w-full rounded-xl py-3 mt-5 text-sm font-semibold">
+              Explorar cenários →
             </button>
 
           </div>
@@ -548,202 +519,149 @@
         </div>
 
 
-        <!-- OVERVIEW -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <!-- ENVIRONMENT -->
+        <div class="mt-6">
 
-          <div class="glass rounded-3xl p-5">
-
-            <div class="flex justify-between items-center mb-5">
-              <div>
-                <div class="text-xs text-white/35 uppercase tracking-widest">
-                  Condições climáticas
-                </div>
-                <h3 class="font-semibold mt-1">
-                  Últimos 30 dias
-                </h3>
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <div class="text-xs text-slate-500 uppercase tracking-wider">
+                Ambiente
               </div>
-
-              <span class="text-xs text-forest-300">
-                NASA POWER
-              </span>
+              <h2 class="text-xl font-bold">Condições recentes</h2>
             </div>
 
-            <div class="space-y-5">
+            <button onclick="loadNASAData()" class="text-xs text-green-300">
+              Atualizar
+            </button>
+          </div>
 
-              <div>
-                <div class="flex justify-between text-xs mb-2">
-                  <span class="text-white/50">Temperatura</span>
-                  <span>29.4°C</span>
-                </div>
+          <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
-                <div class="metric-bar">
-                  <div class="metric-fill bg-red-400" style="width:72%"></div>
-                </div>
+            <div class="glass card p-5">
+              <div class="flex justify-between">
+                <span class="text-slate-500 text-xs">Temperatura</span>
+                <span>🌡️</span>
               </div>
-
-              <div>
-                <div class="flex justify-between text-xs mb-2">
-                  <span class="text-white/50">Disponibilidade de água</span>
-                  <span>64%</span>
-                </div>
-
-                <div class="metric-bar">
-                  <div class="metric-fill bg-blue-400" style="width:64%"></div>
-                </div>
+              <div id="temperatureValue" class="text-2xl font-black mt-3">
+                27.4°C
               </div>
-
-              <div>
-                <div class="flex justify-between text-xs mb-2">
-                  <span class="text-white/50">Condição da vegetação</span>
-                  <span>81%</span>
-                </div>
-
-                <div class="metric-bar">
-                  <div class="metric-fill bg-forest-400" style="width:81%"></div>
-                </div>
+              <div class="text-xs text-slate-500 mt-1">
+                média recente
               </div>
+            </div>
 
+            <div class="glass card p-5">
+              <div class="flex justify-between">
+                <span class="text-slate-500 text-xs">Precipitação</span>
+                <span>🌧️</span>
+              </div>
+              <div id="rainValue" class="text-2xl font-black mt-3">
+                18.2 mm
+              </div>
+              <div class="text-xs text-slate-500 mt-1">
+                período analisado
+              </div>
+            </div>
+
+            <div class="glass card p-5">
+              <div class="flex justify-between">
+                <span class="text-slate-500 text-xs">Stress hídrico</span>
+                <span>💧</span>
+              </div>
+              <div class="text-2xl font-black mt-3">
+                Moderado
+              </div>
+              <div class="text-xs text-yellow-300 mt-1">
+                atenção recomendada
+              </div>
+            </div>
+
+            <div class="glass card p-5">
+              <div class="flex justify-between">
+                <span class="text-slate-500 text-xs">Vegetação</span>
+                <span>🌿</span>
+              </div>
+              <div class="text-2xl font-black mt-3">
+                Estável
+              </div>
+              <div class="text-xs text-green-300 mt-1">
+                tendência positiva
+              </div>
             </div>
 
           </div>
 
+        </div>
 
-          <div class="glass rounded-3xl p-5">
 
-            <div class="flex justify-between items-center mb-5">
-              <div>
-                <div class="text-xs text-white/35 uppercase tracking-widest">
-                  Prioridades
-                </div>
-                <h3 class="font-semibold mt-1">
-                  Perfil do agricultor
-                </h3>
+        <!-- MAP -->
+        <div class="glass card p-3 mt-6">
+
+          <div class="px-3 pt-3 pb-2 flex items-center justify-between">
+            <div>
+              <div class="font-bold">Área analisada</div>
+              <div class="text-xs text-slate-500">
+                Localização da propriedade
               </div>
-
-              <button
-                onclick="showSection('farm')"
-                class="text-xs text-forest-300"
-              >
-                Editar
-              </button>
             </div>
 
-            <div class="space-y-4">
-
-              <div class="flex items-center gap-3">
-                <span class="text-xl">💧</span>
-                <div class="flex-1">
-                  <div class="flex justify-between text-xs">
-                    <span>Conservação de água</span>
-                    <span>Alta</span>
-                  </div>
-
-                  <div class="metric-bar mt-2">
-                    <div class="metric-fill bg-blue-400" style="width:90%"></div>
-                  </div>
-                </div>
-              </div>
-
-
-              <div class="flex items-center gap-3">
-                <span class="text-xl">🌱</span>
-                <div class="flex-1">
-                  <div class="flex justify-between text-xs">
-                    <span>Saúde do solo</span>
-                    <span>Alta</span>
-                  </div>
-
-                  <div class="metric-bar mt-2">
-                    <div class="metric-fill bg-forest-400" style="width:88%"></div>
-                  </div>
-                </div>
-              </div>
-
-
-              <div class="flex items-center gap-3">
-                <span class="text-xl">🌡️</span>
-                <div class="flex-1">
-                  <div class="flex justify-between text-xs">
-                    <span>Resiliência climática</span>
-                    <span>Alta</span>
-                  </div>
-
-                  <div class="metric-bar mt-2">
-                    <div class="metric-fill bg-yellow-300" style="width:82%"></div>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-
+            <span class="text-xs px-2.5 py-1 rounded-full bg-green-400/10 text-green-300">
+              Luanda
+            </span>
           </div>
+
+          <div id="map"></div>
 
         </div>
 
       </section>
 
 
-      <!-- ================================================= -->
       <!-- FARM -->
-      <!-- ================================================= -->
+      <section id="screen-farm" class="screen">
 
-      <section id="farm" class="section fade-in">
-
-        <div class="mb-7">
-          <div class="text-xs uppercase tracking-[.25em] text-forest-300 mb-2">
-            Configuração
+        <div class="mb-6">
+          <div class="text-xs uppercase tracking-wider text-slate-500">
+            Perfil
           </div>
 
-          <h1 class="text-3xl font-bold">
+          <h1 class="text-3xl font-black mt-1">
             Minha propriedade
           </h1>
 
-          <p class="text-white/40 mt-2 max-w-2xl">
-            Quanto melhor conhecermos a propriedade, mais contextualizados
-            serão os cenários apresentados.
+          <p class="text-slate-400 mt-2">
+            Quanto melhor conhecermos a propriedade, mais contextualizadas
+            serão as análises.
           </p>
         </div>
 
 
         <div class="grid lg:grid-cols-2 gap-5">
 
-          <!-- LOCATION -->
-          <div class="glass rounded-3xl p-5">
+          <div class="glass card p-5">
 
-            <h2 class="font-semibold mb-1">
-              📍 Localização
-            </h2>
+            <h2 class="font-bold text-lg">Localização</h2>
 
-            <p class="text-xs text-white/35 mb-5">
-              Selecione a localização da sua propriedade.
+            <p class="text-xs text-slate-500 mt-1">
+              Pode ajustar manualmente as coordenadas.
             </p>
 
-            <div id="farmMap"></div>
+            <div id="farmMap" class="mt-5"></div>
 
             <div class="grid grid-cols-2 gap-3 mt-4">
 
               <div>
-                <label class="text-xs text-white/40">
-                  Latitude
-                </label>
-
-                <input
-                  id="latInput"
+                <label class="text-xs text-slate-500">Latitude</label>
+                <input id="latInput"
                   value="-8.8383"
-                  class="w-full mt-2 bg-black/20 border border-white/10 rounded-xl px-3 py-3 text-sm outline-none focus:border-forest-400"
-                >
+                  class="w-full mt-2 bg-white/5 border border-white/10 rounded-xl px-3 py-3 outline-none focus:border-green-400">
               </div>
 
               <div>
-                <label class="text-xs text-white/40">
-                  Longitude
-                </label>
-
-                <input
-                  id="lonInput"
+                <label class="text-xs text-slate-500">Longitude</label>
+                <input id="lonInput"
                   value="13.2344"
-                  class="w-full mt-2 bg-black/20 border border-white/10 rounded-xl px-3 py-3 text-sm outline-none focus:border-forest-400"
-                >
+                  class="w-full mt-2 bg-white/5 border border-white/10 rounded-xl px-3 py-3 outline-none focus:border-green-400">
               </div>
 
             </div>
@@ -751,453 +669,310 @@
           </div>
 
 
-          <!-- SOIL -->
-          <div class="glass rounded-3xl p-5">
+          <div class="glass card p-5">
 
-            <h2 class="font-semibold mb-1">
-              🌱 Características do solo
+            <h2 class="font-bold text-lg">Solo</h2>
+
+            <div class="mt-5">
+
+              <label class="text-xs text-slate-500">
+                Tipo de solo
+              </label>
+
+              <select id="soilType"
+                class="w-full mt-2 bg-[#0d1d15] border border-white/10 rounded-xl px-3 py-3 outline-none">
+                <option>Não sei</option>
+                <option>Arenoso</option>
+                <option>Argiloso</option>
+                <option>Franco</option>
+                <option>Franco-arenoso</option>
+                <option>Franco-argiloso</option>
+              </select>
+
+            </div>
+
+
+            <div class="mt-6 space-y-6">
+
+              <div>
+                <div class="flex justify-between text-sm">
+                  <span>Matéria orgânica</span>
+                  <span id="organicValue">60%</span>
+                </div>
+
+                <input id="organic"
+                  type="range"
+                  min="0"
+                  max="100"
+                  value="60"
+                  class="w-full mt-3">
+              </div>
+
+              <div>
+                <div class="flex justify-between text-sm">
+                  <span>Retenção de água</span>
+                  <span id="waterRetentionValue">55%</span>
+                </div>
+
+                <input id="waterRetention"
+                  type="range"
+                  min="0"
+                  max="100"
+                  value="55"
+                  class="w-full mt-3">
+              </div>
+
+              <div>
+                <div class="flex justify-between text-sm">
+                  <span>Drenagem</span>
+                  <span id="drainageValue">65%</span>
+                </div>
+
+                <input id="drainage"
+                  type="range"
+                  min="0"
+                  max="100"
+                  value="65"
+                  class="w-full mt-3">
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div class="glass card p-5 lg:col-span-2">
+
+            <h2 class="font-bold text-lg">
+              O que é mais importante para si?
             </h2>
 
-            <p class="text-xs text-white/35 mb-5">
-              Informação local fornecida pelo agricultor.
+            <p class="text-xs text-slate-500 mt-1">
+              Estes pesos ajudam a aplicação a comparar estratégias.
             </p>
 
-            <div class="space-y-5">
+            <div class="grid md:grid-cols-2 gap-6 mt-6">
 
               <div>
-                <label class="text-xs text-white/40">
-                  Tipo de solo
-                </label>
-
-                <select
-                  id="soilType"
-                  class="w-full mt-2 bg-[#0b2118] border border-white/10 rounded-xl px-3 py-3 text-sm outline-none"
-                >
-                  <option>Franco</option>
-                  <option>Arenoso</option>
-                  <option>Argiloso</option>
-                  <option>Franco-arenoso</option>
-                  <option>Franco-argiloso</option>
-                </select>
-              </div>
-
-
-              <div>
-                <div class="flex justify-between">
-                  <label class="text-xs text-white/40">
-                    Matéria orgânica
-                  </label>
-
-                  <span id="organicValue" class="text-xs text-forest-300">
-                    Média
-                  </span>
+                <div class="flex justify-between text-sm">
+                  <span>💧 Conservação de água</span>
+                  <span id="priorityWaterValue">80%</span>
                 </div>
 
-                <input
-                  id="organicSlider"
+                <input id="priorityWater"
                   type="range"
-                  min="1"
-                  max="3"
-                  value="2"
-                  class="w-full mt-4 accent-green-400"
-                  oninput="updateSlider('organicSlider','organicValue',['Baixa','Média','Alta'])"
-                >
+                  min="0"
+                  max="100"
+                  value="80"
+                  class="w-full mt-3">
               </div>
-
 
               <div>
-                <div class="flex justify-between">
-                  <label class="text-xs text-white/40">
-                    Retenção de água
-                  </label>
-
-                  <span id="waterValue" class="text-xs text-forest-300">
-                    Média
-                  </span>
+                <div class="flex justify-between text-sm">
+                  <span>🌱 Saúde do solo</span>
+                  <span id="prioritySoilValue">75%</span>
                 </div>
 
-                <input
-                  id="waterSlider"
+                <input id="prioritySoil"
                   type="range"
-                  min="1"
-                  max="3"
-                  value="2"
-                  class="w-full mt-4 accent-blue-400"
-                  oninput="updateSlider('waterSlider','waterValue',['Baixa','Média','Alta'])"
-                >
+                  min="0"
+                  max="100"
+                  value="75"
+                  class="w-full mt-3">
               </div>
-
 
               <div>
-                <div class="flex justify-between">
-                  <label class="text-xs text-white/40">
-                    Drenagem
-                  </label>
-
-                  <span id="drainageValue" class="text-xs text-forest-300">
-                    Boa
-                  </span>
+                <div class="flex justify-between text-sm">
+                  <span>🌡️ Resiliência climática</span>
+                  <span id="priorityClimateValue">85%</span>
                 </div>
 
-                <input
-                  id="drainageSlider"
+                <input id="priorityClimate"
                   type="range"
-                  min="1"
-                  max="3"
-                  value="2"
-                  class="w-full mt-4 accent-cyan-400"
-                  oninput="updateSlider('drainageSlider','drainageValue',['Baixa','Boa','Excelente'])"
-                >
+                  min="0"
+                  max="100"
+                  value="85"
+                  class="w-full mt-3">
+              </div>
+
+              <div>
+                <div class="flex justify-between text-sm">
+                  <span>📈 Produtividade</span>
+                  <span id="priorityProductionValue">70%</span>
+                </div>
+
+                <input id="priorityProduction"
+                  type="range"
+                  min="0"
+                  max="100"
+                  value="70"
+                  class="w-full mt-3">
               </div>
 
             </div>
+
+            <button onclick="saveFarm()"
+              class="primary-btn w-full md:w-auto px-7 py-3 rounded-xl font-bold mt-7">
+              Guardar perfil
+            </button>
 
           </div>
-
-        </div>
-
-
-        <!-- PRIORITIES -->
-
-        <div class="glass rounded-3xl p-5 mt-5">
-
-          <div class="mb-5">
-            <div class="text-xs text-forest-300 uppercase tracking-widest">
-              Perfil de decisão
-            </div>
-
-            <h2 class="text-xl font-semibold mt-1">
-              Quais são as suas prioridades?
-            </h2>
-
-            <p class="text-sm text-white/40 mt-1">
-              Estas preferências alteram a forma como os cenários são avaliados.
-            </p>
-          </div>
-
-
-          <div class="grid md:grid-cols-2 gap-5">
-
-            <div>
-              <div class="flex justify-between text-xs">
-                <span>💧 Conservação de água</span>
-                <span id="waterPriorityLabel">90%</span>
-              </div>
-
-              <input
-                id="waterPriority"
-                type="range"
-                min="0"
-                max="100"
-                value="90"
-                class="w-full mt-3 accent-blue-400"
-                oninput="updatePriority()"
-              >
-            </div>
-
-
-            <div>
-              <div class="flex justify-between text-xs">
-                <span>🌱 Saúde do solo</span>
-                <span id="soilPriorityLabel">88%</span>
-              </div>
-
-              <input
-                id="soilPriority"
-                type="range"
-                min="0"
-                max="100"
-                value="88"
-                class="w-full mt-3 accent-green-400"
-                oninput="updatePriority()"
-              >
-            </div>
-
-
-            <div>
-              <div class="flex justify-between text-xs">
-                <span>🌡️ Resiliência climática</span>
-                <span id="climatePriorityLabel">82%</span>
-              </div>
-
-              <input
-                id="climatePriority"
-                type="range"
-                min="0"
-                max="100"
-                value="82"
-                class="w-full mt-3 accent-yellow-300"
-                oninput="updatePriority()"
-              >
-            </div>
-
-
-            <div>
-              <div class="flex justify-between text-xs">
-                <span>📈 Produtividade</span>
-                <span id="yieldPriorityLabel">70%</span>
-              </div>
-
-              <input
-                id="yieldPriority"
-                type="range"
-                min="0"
-                max="100"
-                value="70"
-                class="w-full mt-3 accent-purple-400"
-                oninput="updatePriority()"
-              >
-            </div>
-
-          </div>
-
-
-          <button
-            onclick="saveFarm()"
-            class="mt-6 bg-forest-500 hover:bg-forest-400 transition rounded-xl px-5 py-3 text-sm font-semibold"
-          >
-            Guardar perfil
-          </button>
 
         </div>
 
       </section>
 
 
-      <!-- ================================================= -->
       <!-- ROTATION -->
-      <!-- ================================================= -->
+      <section id="screen-rotation" class="screen">
 
-      <section id="rotation" class="section fade-in">
-
-        <div class="mb-7">
-
-          <div class="text-xs uppercase tracking-[.25em] text-forest-300 mb-2">
-            Planeamento
+        <div class="mb-6">
+          <div class="text-xs uppercase tracking-wider text-slate-500">
+            Laboratório
           </div>
 
-          <h1 class="text-3xl font-bold">
-            Rotação de culturas
+          <h1 class="text-3xl font-black mt-1">
+            Laboratório de rotação
           </h1>
 
-          <p class="text-white/40 mt-2 max-w-2xl">
-            Construa uma sequência de culturas e veja como ela pode
-            responder às condições da propriedade.
+          <p class="text-slate-400 mt-2 max-w-2xl">
+            Construa uma sequência de culturas e explore como ela pode
+            responder às suas prioridades.
           </p>
-
         </div>
 
 
-        <!-- CROP SELECTOR -->
+        <div class="glass card p-5">
 
-        <div class="glass rounded-3xl p-5 mb-5">
-
-          <div class="flex justify-between items-center mb-5">
+          <div class="flex items-center justify-between mb-5">
             <div>
-              <h2 class="font-semibold">
-                Selecionar culturas
-              </h2>
-
-              <p class="text-xs text-white/35 mt-1">
-                Clique nas culturas que pretende considerar.
+              <h2 class="font-bold">Escolha as culturas</h2>
+              <p class="text-xs text-slate-500 mt-1">
+                Selecione as culturas que deseja considerar.
               </p>
             </div>
 
-            <span id="cropCount" class="text-xs text-forest-300">
-              3 selecionadas
+            <span id="cropCounter"
+              class="text-xs px-3 py-1.5 rounded-full bg-green-400/10 text-green-300">
+              0 selecionadas
             </span>
           </div>
 
 
           <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
 
-            <div
-              class="crop-card selected border border-white/10 rounded-2xl p-4"
-              data-crop="Milho"
-              onclick="toggleCrop(this)"
-            >
+            <button class="crop-card glass border border-white/10 rounded-2xl p-4 text-left"
+              data-crop="Milho" onclick="toggleCrop(this)">
               <div class="text-3xl">🌽</div>
-              <div class="font-semibold text-sm mt-3">Milho</div>
-              <div class="text-[10px] text-white/35 mt-1">
-                Água alta
-              </div>
-            </div>
+              <div class="font-bold mt-3 text-sm">Milho</div>
+              <div class="text-xs text-slate-500 mt-1">Cereal</div>
+            </button>
 
-
-            <div
-              class="crop-card selected border border-white/10 rounded-2xl p-4"
-              data-crop="Feijão"
-              onclick="toggleCrop(this)"
-            >
+            <button class="crop-card glass border border-white/10 rounded-2xl p-4 text-left"
+              data-crop="Feijão" onclick="toggleCrop(this)">
               <div class="text-3xl">🫘</div>
-              <div class="font-semibold text-sm mt-3">Feijão</div>
-              <div class="text-[10px] text-white/35 mt-1">
-                Leguminosa
-              </div>
-            </div>
+              <div class="font-bold mt-3 text-sm">Feijão</div>
+              <div class="text-xs text-slate-500 mt-1">Leguminosa</div>
+            </button>
 
-
-            <div
-              class="crop-card selected border border-white/10 rounded-2xl p-4"
-              data-crop="Amendoim"
-              onclick="toggleCrop(this)"
-            >
+            <button class="crop-card glass border border-white/10 rounded-2xl p-4 text-left"
+              data-crop="Amendoim" onclick="toggleCrop(this)">
               <div class="text-3xl">🥜</div>
-              <div class="font-semibold text-sm mt-3">Amendoim</div>
-              <div class="text-[10px] text-white/35 mt-1">
-                Água média
-              </div>
-            </div>
+              <div class="font-bold mt-3 text-sm">Amendoim</div>
+              <div class="text-xs text-slate-500 mt-1">Leguminosa</div>
+            </button>
 
-
-            <div
-              class="crop-card border border-white/10 rounded-2xl p-4"
-              data-crop="Milheto"
-              onclick="toggleCrop(this)"
-            >
+            <button class="crop-card glass border border-white/10 rounded-2xl p-4 text-left"
+              data-crop="Milheto" onclick="toggleCrop(this)">
               <div class="text-3xl">🌾</div>
-              <div class="font-semibold text-sm mt-3">Milheto</div>
-              <div class="text-[10px] text-white/35 mt-1">
-                Tolerante ao calor
-              </div>
-            </div>
+              <div class="font-bold mt-3 text-sm">Milheto</div>
+              <div class="text-xs text-slate-500 mt-1">Cereal</div>
+            </button>
 
-
-            <div
-              class="crop-card border border-white/10 rounded-2xl p-4"
-              data-crop="Soja"
-              onclick="toggleCrop(this)"
-            >
-              <div class="text-3xl">🌱</div>
-              <div class="font-semibold text-sm mt-3">Soja</div>
-              <div class="text-[10px] text-white/35 mt-1">
-                Leguminosa
-              </div>
-            </div>
-
-
-            <div
-              class="crop-card border border-white/10 rounded-2xl p-4"
-              data-crop="Sorgo"
-              onclick="toggleCrop(this)"
-            >
+            <button class="crop-card glass border border-white/10 rounded-2xl p-4 text-left"
+              data-crop="Soja" onclick="toggleCrop(this)">
               <div class="text-3xl">🌿</div>
-              <div class="font-semibold text-sm mt-3">Sorgo</div>
-              <div class="text-[10px] text-white/35 mt-1">
-                Resistente
-              </div>
-            </div>
+              <div class="font-bold mt-3 text-sm">Soja</div>
+              <div class="text-xs text-slate-500 mt-1">Leguminosa</div>
+            </button>
+
+            <button class="crop-card glass border border-white/10 rounded-2xl p-4 text-left"
+              data-crop="Sorgo" onclick="toggleCrop(this)">
+              <div class="text-3xl">🌾</div>
+              <div class="font-bold mt-3 text-sm">Sorgo</div>
+              <div class="text-xs text-slate-500 mt-1">Cereal</div>
+            </button>
 
           </div>
+
+
+          <button onclick="generateRotation()"
+            class="primary-btn w-full py-3 rounded-xl font-bold mt-6">
+            Gerar estratégia de rotação
+          </button>
 
         </div>
 
 
-        <!-- ROTATION TIMELINE -->
+        <div id="rotationResult" class="glass card p-5 mt-5 hidden">
 
-        <div class="glass rounded-3xl p-5">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
 
-          <div class="flex items-center justify-between mb-6">
             <div>
-              <div class="text-xs text-forest-300 uppercase tracking-widest">
-                Estratégia personalizada
+              <div class="text-xs uppercase tracking-wider text-slate-500">
+                Estratégia exploratória
               </div>
 
-              <h2 class="text-xl font-semibold mt-1">
-                Rotação de 4 anos
+              <h2 class="text-xl font-bold mt-1">
+                Rotação equilibrada
               </h2>
+
+              <p class="text-sm text-slate-400 mt-2">
+                Esta é uma simulação do protótipo e não uma recomendação
+                agronómica definitiva.
+              </p>
             </div>
 
-            <button
-              onclick="generateRotation()"
-              class="bg-forest-500 hover:bg-forest-400 rounded-xl px-4 py-3 text-sm font-semibold transition"
-            >
-              ✦ Gerar estratégia
-            </button>
-          </div>
-
-
-          <div id="rotationTimeline" class="grid md:grid-cols-4 gap-3">
-
-            <div class="glass-light rounded-2xl p-4">
-              <div class="text-xs text-white/35">ANO 1</div>
-              <div class="text-4xl mt-4">🌽</div>
-              <div class="font-semibold mt-3">Milho</div>
-              <div class="text-xs text-white/35 mt-1">
-                Cultura principal
-              </div>
-            </div>
-
-
-            <div class="glass-light rounded-2xl p-4">
-              <div class="text-xs text-white/35">ANO 2</div>
-              <div class="text-4xl mt-4">🫘</div>
-              <div class="font-semibold mt-3">Feijão</div>
-              <div class="text-xs text-white/35 mt-1">
-                Leguminosa
-              </div>
-            </div>
-
-
-            <div class="glass-light rounded-2xl p-4">
-              <div class="text-xs text-white/35">ANO 3</div>
-              <div class="text-4xl mt-4">🥜</div>
-              <div class="font-semibold mt-3">Amendoim</div>
-              <div class="text-xs text-white/35 mt-1">
-                Diversificação
-              </div>
-            </div>
-
-
-            <div class="glass-light rounded-2xl p-4">
-              <div class="text-xs text-white/35">ANO 4</div>
-              <div class="text-4xl mt-4">🌾</div>
-              <div class="font-semibold mt-3">Milheto</div>
-              <div class="text-xs text-white/35 mt-1">
-                Menor pressão hídrica
-              </div>
-            </div>
-
-          </div>
-
-
-          <div class="grid md:grid-cols-3 gap-4 mt-6">
-
-            <div class="glass-light rounded-2xl p-4">
-              <div class="text-xs text-white/35">
-                DIVERSIDADE
-              </div>
-              <div class="text-2xl font-bold mt-2">
-                86%
-              </div>
-              <div class="text-xs text-forest-300 mt-1">
-                Excelente
-              </div>
-            </div>
-
-
-            <div class="glass-light rounded-2xl p-4">
-              <div class="text-xs text-white/35">
-                PRESSÃO HÍDRICA
-              </div>
-              <div class="text-2xl font-bold mt-2">
-                -22%
-              </div>
-              <div class="text-xs text-forest-300 mt-1">
-                Potencial de redução
-              </div>
-            </div>
-
-
-            <div class="glass-light rounded-2xl p-4">
-              <div class="text-xs text-white/35">
-                RESILIÊNCIA
-              </div>
-              <div class="text-2xl font-bold mt-2">
+            <div class="text-left md:text-right">
+              <div class="text-3xl font-black text-green-300">
                 86/100
               </div>
-              <div class="text-xs text-forest-300 mt-1">
-                Alta
+              <div class="text-xs text-slate-500">
+                índice exploratório
+              </div>
+            </div>
+
+          </div>
+
+
+          <div id="rotationTimeline"
+            class="grid grid-cols-2 md:grid-cols-4 gap-8 mt-8 px-2">
+          </div>
+
+
+          <div class="grid md:grid-cols-3 gap-3 mt-8">
+
+            <div class="bg-white/[.035] rounded-2xl p-4">
+              <div class="text-xs text-slate-500">Água</div>
+              <div class="font-bold mt-1">Boa</div>
+              <div class="text-xs text-green-300 mt-1">
+                menor pressão
+              </div>
+            </div>
+
+            <div class="bg-white/[.035] rounded-2xl p-4">
+              <div class="text-xs text-slate-500">Solo</div>
+              <div class="font-bold mt-1">Positivo</div>
+              <div class="text-xs text-green-300 mt-1">
+                maior diversidade
+              </div>
+            </div>
+
+            <div class="bg-white/[.035] rounded-2xl p-4">
+              <div class="text-xs text-slate-500">Clima</div>
+              <div class="font-bold mt-1">Resiliente</div>
+              <div class="text-xs text-green-300 mt-1">
+                diversificação
               </div>
             </div>
 
@@ -1208,315 +983,164 @@
       </section>
 
 
-      <!-- ================================================= -->
       <!-- SCENARIOS -->
-      <!-- ================================================= -->
+      <section id="screen-scenarios" class="screen">
 
-      <section id="scenarios" class="section fade-in">
-
-        <div class="mb-7">
-
-          <div class="text-xs uppercase tracking-[.25em] text-forest-300 mb-2">
-            Decision support
+        <div class="mb-6">
+          <div class="text-xs uppercase tracking-wider text-slate-500">
+            Simulador
           </div>
 
-          <h1 class="text-3xl font-bold">
-            Explorar cenários
+          <h1 class="text-3xl font-black mt-1">
+            E se...?
           </h1>
 
-          <p class="text-white/40 mt-2 max-w-2xl">
-            Compare estratégias diferentes antes de tomar uma decisão.
+          <p class="text-slate-400 mt-2 max-w-2xl">
+            Explore possíveis alterações climáticas e veja como os cenários
+            poderiam afetar a estratégia.
           </p>
-
         </div>
 
 
-        <div class="grid lg:grid-cols-3 gap-4">
+        <div class="grid lg:grid-cols-2 gap-5">
 
+          <div class="glass card p-6">
 
-          <!-- CURRENT -->
-          <div class="scenario-card glass rounded-3xl p-5">
+            <h2 class="font-bold text-lg">
+              Temperatura
+            </h2>
 
-            <div class="flex justify-between">
-              <div>
-                <div class="text-xs text-white/35 uppercase">
-                  Cenário 01
-                </div>
+            <div class="mt-7 flex items-center justify-between">
+              <span class="text-slate-400">
+                Aumento previsto
+              </span>
 
-                <h2 class="font-semibold mt-1">
-                  Rotação atual
-                </h2>
-              </div>
-
-              <span class="text-xs bg-white/5 px-2 py-1 rounded-lg">
-                Atual
+              <span id="tempScenarioValue"
+                class="text-2xl font-black text-orange-300">
+                +1°C
               </span>
             </div>
 
+            <input id="tempScenario"
+              type="range"
+              min="0"
+              max="4"
+              value="1"
+              class="w-full mt-5">
 
-            <div class="mt-6 text-5xl font-bold">
-              61
-              <span class="text-sm text-white/30">/100</span>
-            </div>
-
-            <div class="text-xs text-yellow-300 mt-1">
-              Resiliência moderada
-            </div>
-
-
-            <div class="space-y-4 mt-6">
-
-              <div>
-                <div class="flex justify-between text-xs mb-2">
-                  <span>Água</span>
-                  <span>54</span>
-                </div>
-                <div class="metric-bar">
-                  <div class="metric-fill bg-blue-400" style="width:54%"></div>
-                </div>
-              </div>
-
-              <div>
-                <div class="flex justify-between text-xs mb-2">
-                  <span>Solo</span>
-                  <span>62</span>
-                </div>
-                <div class="metric-bar">
-                  <div class="metric-fill bg-forest-400" style="width:62%"></div>
-                </div>
-              </div>
-
-              <div>
-                <div class="flex justify-between text-xs mb-2">
-                  <span>Clima</span>
-                  <span>58</span>
-                </div>
-                <div class="metric-bar">
-                  <div class="metric-fill bg-yellow-300" style="width:58%"></div>
-                </div>
-              </div>
-
+            <div class="flex justify-between text-xs text-slate-600 mt-2">
+              <span>0°C</span>
+              <span>+4°C</span>
             </div>
 
           </div>
 
 
-          <!-- BALANCED -->
-          <div class="scenario-card glass rounded-3xl p-5 border border-forest-400/20">
+          <div class="glass card p-6">
 
-            <div class="flex justify-between">
-              <div>
-                <div class="text-xs text-forest-300 uppercase">
-                  Cenário 02
-                </div>
+            <h2 class="font-bold text-lg">
+              Precipitação
+            </h2>
 
-                <h2 class="font-semibold mt-1">
-                  Rotação equilibrada
-                </h2>
-              </div>
+            <div class="mt-7 flex items-center justify-between">
+              <span class="text-slate-400">
+                Alteração
+              </span>
 
-              <span class="text-xs bg-forest-500/15 text-forest-300 px-2 py-1 rounded-lg">
-                Recomendado
+              <span id="rainScenarioValue"
+                class="text-2xl font-black text-blue-300">
+                -10%
               </span>
             </div>
 
+            <input id="rainScenario"
+              type="range"
+              min="-40"
+              max="20"
+              step="10"
+              value="-10"
+              class="w-full mt-5">
 
-            <div class="mt-6 text-5xl font-bold">
-              86
-              <span class="text-sm text-white/30">/100</span>
+            <div class="flex justify-between text-xs text-slate-600 mt-2">
+              <span>-40%</span>
+              <span>+20%</span>
             </div>
-
-            <div class="text-xs text-forest-300 mt-1">
-              Alta resiliência
-            </div>
-
-
-            <div class="space-y-4 mt-6">
-
-              <div>
-                <div class="flex justify-between text-xs mb-2">
-                  <span>Água</span>
-                  <span>82</span>
-                </div>
-                <div class="metric-bar">
-                  <div class="metric-fill bg-blue-400" style="width:82%"></div>
-                </div>
-              </div>
-
-              <div>
-                <div class="flex justify-between text-xs mb-2">
-                  <span>Solo</span>
-                  <span>91</span>
-                </div>
-                <div class="metric-bar">
-                  <div class="metric-fill bg-forest-400" style="width:91%"></div>
-                </div>
-              </div>
-
-              <div>
-                <div class="flex justify-between text-xs mb-2">
-                  <span>Clima</span>
-                  <span>88</span>
-                </div>
-                <div class="metric-bar">
-                  <div class="metric-fill bg-yellow-300" style="width:88%"></div>
-                </div>
-              </div>
-
-            </div>
-
-            <button
-              onclick="selectScenario('balanced')"
-              class="w-full mt-6 bg-forest-500 hover:bg-forest-400 rounded-xl py-3 text-sm font-semibold"
-            >
-              Selecionar cenário
-            </button>
-
-          </div>
-
-
-          <!-- WATER -->
-          <div class="scenario-card glass rounded-3xl p-5">
-
-            <div class="flex justify-between">
-              <div>
-                <div class="text-xs text-white/35 uppercase">
-                  Cenário 03
-                </div>
-
-                <h2 class="font-semibold mt-1">
-                  Baixo consumo de água
-                </h2>
-              </div>
-
-              <span class="text-xs bg-blue-400/10 text-blue-300 px-2 py-1 rounded-lg">
-                Water-smart
-              </span>
-            </div>
-
-
-            <div class="mt-6 text-5xl font-bold">
-              82
-              <span class="text-sm text-white/30">/100</span>
-            </div>
-
-            <div class="text-xs text-forest-300 mt-1">
-              Alta resiliência
-            </div>
-
-
-            <div class="space-y-4 mt-6">
-
-              <div>
-                <div class="flex justify-between text-xs mb-2">
-                  <span>Água</span>
-                  <span>94</span>
-                </div>
-                <div class="metric-bar">
-                  <div class="metric-fill bg-blue-400" style="width:94%"></div>
-                </div>
-              </div>
-
-              <div>
-                <div class="flex justify-between text-xs mb-2">
-                  <span>Solo</span>
-                  <span>79</span>
-                </div>
-                <div class="metric-bar">
-                  <div class="metric-fill bg-forest-400" style="width:79%"></div>
-                </div>
-              </div>
-
-              <div>
-                <div class="flex justify-between text-xs mb-2">
-                  <span>Clima</span>
-                  <span>91</span>
-                </div>
-                <div class="metric-bar">
-                  <div class="metric-fill bg-yellow-300" style="width:91%"></div>
-                </div>
-              </div>
-
-            </div>
-
-            <button
-              onclick="selectScenario('water')"
-              class="w-full mt-6 glass-light hover:bg-white/10 rounded-xl py-3 text-sm font-semibold"
-            >
-              Selecionar cenário
-            </button>
 
           </div>
 
         </div>
 
 
-        <!-- COMPARISON -->
-        <div class="glass rounded-3xl p-5 mt-5">
+        <div class="glass card p-6 mt-5">
 
-          <div class="flex justify-between items-center mb-6">
+          <div class="flex items-center justify-between">
             <div>
-              <div class="text-xs text-forest-300 uppercase tracking-widest">
-                Comparação
+              <div class="text-xs text-slate-500 uppercase tracking-wider">
+                Resultado
               </div>
 
-              <h2 class="text-xl font-semibold mt-1">
-                Impacto potencial
+              <h2 class="text-xl font-bold mt-1">
+                Impacto exploratório
               </h2>
             </div>
 
-            <span class="text-xs text-white/35">
-              Estimativa experimental
+            <span id="scenarioRisk"
+              class="px-3 py-1.5 rounded-full bg-yellow-400/10 text-yellow-300 text-xs">
+              Risco moderado
             </span>
           </div>
 
 
-          <div class="overflow-x-auto">
+          <div class="grid md:grid-cols-3 gap-4 mt-7">
 
-            <table class="w-full text-sm">
+            <div class="bg-white/[.035] rounded-2xl p-5">
+              <div class="text-xs text-slate-500">Água</div>
+              <div id="scenarioWater"
+                class="text-2xl font-black mt-2">
+                -12%
+              </div>
+              <div class="text-xs text-slate-500 mt-1">
+                disponibilidade relativa
+              </div>
+            </div>
 
-              <thead>
-                <tr class="text-left text-white/35 border-b border-white/5">
-                  <th class="py-3 font-normal">Indicador</th>
-                  <th class="py-3 font-normal">Atual</th>
-                  <th class="py-3 font-normal">Equilibrada</th>
-                  <th class="py-3 font-normal">Water-smart</th>
-                </tr>
-              </thead>
+            <div class="bg-white/[.035] rounded-2xl p-5">
+              <div class="text-xs text-slate-500">Stress térmico</div>
+              <div id="scenarioHeat"
+                class="text-2xl font-black mt-2">
+                +18%
+              </div>
+              <div class="text-xs text-slate-500 mt-1">
+                pressão potencial
+              </div>
+            </div>
 
-              <tbody>
+            <div class="bg-white/[.035] rounded-2xl p-5">
+              <div class="text-xs text-slate-500">Resiliência</div>
+              <div id="scenarioScore"
+                class="text-2xl font-black mt-2 text-green-300">
+                72/100
+              </div>
+              <div class="text-xs text-slate-500 mt-1">
+                índice exploratório
+              </div>
+            </div>
 
-                <tr class="border-b border-white/5">
-                  <td class="py-4">💧 Pressão sobre água</td>
-                  <td>Alta</td>
-                  <td class="text-forest-300">Média</td>
-                  <td class="text-forest-300">Baixa</td>
-                </tr>
+          </div>
 
-                <tr class="border-b border-white/5">
-                  <td class="py-4">🌱 Saúde do solo</td>
-                  <td>Média</td>
-                  <td class="text-forest-300">Alta</td>
-                  <td>Alta</td>
-                </tr>
 
-                <tr class="border-b border-white/5">
-                  <td class="py-4">🌡️ Stress climático</td>
-                  <td class="text-red-300">Alto</td>
-                  <td class="text-forest-300">Moderado</td>
-                  <td class="text-forest-300">Baixo</td>
-                </tr>
+          <div class="mt-7 p-4 rounded-2xl bg-green-400/5 border border-green-400/10">
 
-                <tr>
-                  <td class="py-4">🔄 Diversidade</td>
-                  <td>Baixa</td>
-                  <td class="text-forest-300">Alta</td>
-                  <td class="text-forest-300">Alta</td>
-                </tr>
+            <div class="font-bold text-sm">
+              💡 O que isto significa?
+            </div>
 
-              </tbody>
-
-            </table>
+            <p id="scenarioExplanation"
+              class="text-sm text-slate-400 leading-relaxed mt-2">
+              Um cenário com aumento moderado da temperatura e redução da
+              precipitação aumenta a importância de estratégias que conservem
+              água e diversifiquem a rotação.
+            </p>
 
           </div>
 
@@ -1525,138 +1149,173 @@
       </section>
 
 
-      <!-- ================================================= -->
-      <!-- INSIGHTS -->
-      <!-- ================================================= -->
+      <!-- ASSISTANT -->
+      <section id="screen-assistant" class="screen">
 
-      <section id="insights" class="section fade-in">
+        <div class="mb-6">
 
-        <div class="mb-7">
-
-          <div class="text-xs uppercase tracking-[.25em] text-forest-300 mb-2">
-            Earth observation insights
+          <div class="text-xs uppercase tracking-wider text-slate-500">
+            Assistente
           </div>
 
-          <h1 class="text-3xl font-bold">
-            Insights agrícolas
+          <h1 class="text-3xl font-black mt-1">
+            Fale com a sua propriedade
           </h1>
 
-          <p class="text-white/40 mt-2">
-            Transformando dados ambientais em informação compreensível.
+          <p class="text-slate-400 mt-2">
+            Faça perguntas sobre água, clima, solo e rotação.
           </p>
 
         </div>
 
 
-        <div class="grid md:grid-cols-2 gap-4">
+        <div class="max-w-4xl">
 
-          <div class="glass rounded-3xl p-5">
+          <div id="chatBox"
+            class="glass card p-4 md:p-6 min-h-[440px] max-h-[560px] overflow-y-auto space-y-4">
 
-            <div class="text-3xl">🌡️</div>
+            <div class="chat-bot p-4 max-w-[88%]">
 
-            <div class="text-xs text-red-300 uppercase tracking-widest mt-5">
-              Temperatura
+              <div class="text-xs text-green-300 font-semibold mb-2">
+                AgroResilience
+              </div>
+
+              <p class="text-sm text-slate-300 leading-relaxed">
+                Olá! Posso ajudar a explorar questões relacionadas com
+                água, clima, solo e rotação de culturas.
+              </p>
+
+              <div class="grid sm:grid-cols-2 gap-2 mt-4">
+
+                <button onclick="askAssistant('Tenho pouca água. O que devo analisar?')"
+                  class="secondary-btn rounded-xl p-3 text-left text-xs">
+                  💧 Tenho pouca água
+                </button>
+
+                <button onclick="askAssistant('Como posso melhorar o solo?')"
+                  class="secondary-btn rounded-xl p-3 text-left text-xs">
+                  🌱 Quero melhorar o solo
+                </button>
+
+                <button onclick="askAssistant('O que acontece se chover menos?')"
+                  class="secondary-btn rounded-xl p-3 text-left text-xs">
+                  🌧️ E se chover menos?
+                </button>
+
+                <button onclick="askAssistant('Por que devo diversificar a rotação?')"
+                  class="secondary-btn rounded-xl p-3 text-left text-xs">
+                  ↻ Por que diversificar?
+                </button>
+
+              </div>
+
             </div>
-
-            <h2 class="text-xl font-semibold mt-1">
-              Stress térmico crescente
-            </h2>
-
-            <p class="text-sm text-white/40 leading-relaxed mt-3">
-              As condições recentes indicam maior pressão térmica.
-              Estratégias que diversifiquem a rotação podem reduzir
-              a exposição concentrada a uma única cultura.
-            </p>
 
           </div>
 
 
-          <div class="glass rounded-3xl p-5">
+          <form onsubmit="sendMessage(event)"
+            class="flex gap-2 mt-4">
 
+            <input
+              id="chatInput"
+              placeholder="Ex.: Tenho pouca água..."
+              class="flex-1 bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-green-400"
+            >
+
+            <button
+              class="primary-btn w-14 rounded-2xl font-bold">
+              ↑
+            </button>
+
+          </form>
+
+        </div>
+
+      </section>
+
+
+      <!-- INSIGHTS -->
+      <section id="screen-insights" class="screen">
+
+        <div class="mb-6">
+
+          <div class="text-xs uppercase tracking-wider text-slate-500">
+            Inteligência
+          </div>
+
+          <h1 class="text-3xl font-black mt-1">
+            Insights
+          </h1>
+
+          <p class="text-slate-400 mt-2">
+            Informação transformada em contexto para a sua decisão.
+          </p>
+
+        </div>
+
+
+        <div class="grid md:grid-cols-2 gap-5">
+
+          <div class="glass card p-6">
             <div class="text-3xl">💧</div>
-
-            <div class="text-xs text-blue-300 uppercase tracking-widest mt-5">
-              Água
-            </div>
-
-            <h2 class="text-xl font-semibold mt-1">
-              A água deve ser uma prioridade
-            </h2>
-
-            <p class="text-sm text-white/40 leading-relaxed mt-3">
-              A disponibilidade hídrica observada sugere avaliar
-              culturas com diferentes necessidades de água e
-              estratégias que reduzam a pressão sobre o recurso.
+            <h2 class="font-bold text-lg mt-4">Água</h2>
+            <p class="text-sm text-slate-400 leading-relaxed mt-2">
+              A disponibilidade de água influencia diretamente o risco
+              climático. A aplicação utiliza os dados ambientais como
+              contexto para explorar diferentes estratégias.
             </p>
-
           </div>
 
+          <div class="glass card p-6">
+            <div class="text-3xl">🌡️</div>
+            <h2 class="font-bold text-lg mt-4">Calor</h2>
+            <p class="text-sm text-slate-400 leading-relaxed mt-2">
+              Alterações de temperatura podem mudar o ambiente em que as
+              culturas se desenvolvem. O simulador permite explorar
+              cenários futuros.
+            </p>
+          </div>
 
-          <div class="glass rounded-3xl p-5">
-
+          <div class="glass card p-6">
             <div class="text-3xl">🌱</div>
-
-            <div class="text-xs text-forest-300 uppercase tracking-widest mt-5">
-              Solo
-            </div>
-
-            <h2 class="text-xl font-semibold mt-1">
-              A diversidade pode favorecer o sistema
-            </h2>
-
-            <p class="text-sm text-white/40 leading-relaxed mt-3">
-              Uma rotação mais diversificada permite comparar
-              estratégias com diferentes grupos de culturas e
-              diferentes perfis de utilização de recursos.
+            <h2 class="font-bold text-lg mt-4">Solo</h2>
+            <p class="text-sm text-slate-400 leading-relaxed mt-2">
+              A rotação pode ser analisada juntamente com características
+              locais do solo e prioridades do agricultor.
             </p>
-
           </div>
 
-
-          <div class="glass rounded-3xl p-5">
-
+          <div class="glass card p-6">
             <div class="text-3xl">🛰️</div>
-
-            <div class="text-xs text-purple-300 uppercase tracking-widest mt-5">
-              NASA Earth Data
-            </div>
-
-            <h2 class="text-xl font-semibold mt-1">
-              Do espaço para a decisão
-            </h2>
-
-            <p class="text-sm text-white/40 leading-relaxed mt-3">
-              Dados ambientais podem ser transformados em indicadores
-              que ajudam o agricultor a explorar diferentes cenários
-              antes de escolher uma estratégia.
+            <h2 class="font-bold text-lg mt-4">NASA Earth Data</h2>
+            <p class="text-sm text-slate-400 leading-relaxed mt-2">
+              Dados ambientais podem ajudar a contextualizar condições
+              climáticas e apoiar a exploração de cenários agrícolas.
             </p>
-
           </div>
 
         </div>
 
 
-        <div class="glass rounded-3xl p-5 mt-5">
+        <div class="glass card p-5 mt-5 border-yellow-400/10">
 
-          <div class="flex gap-4">
+          <div class="flex gap-3">
 
-            <div class="text-2xl">
-              ℹ️
-            </div>
+            <div class="text-xl">⚠️</div>
 
             <div>
 
-              <h3 class="font-semibold">
+              <div class="font-bold text-sm">
                 Importante
-              </h3>
+              </div>
 
-              <p class="text-sm text-white/40 leading-relaxed mt-2">
-                Esta interface é um protótipo de apoio à decisão.
-                Os índices e cenários apresentados nesta versão são
-                demonstrativos e não constituem uma recomendação
-                agronómica definitiva. A versão final deverá utilizar
-                dados científicos validados, modelos apropriados,
-                características locais e validação com especialistas.
+              <p class="text-xs text-slate-500 leading-relaxed mt-1">
+                Os índices, pontuações e cenários desta versão são
+                demonstrativos. Não devem ser interpretados como
+                recomendações agronómicas definitivas. Uma versão de
+                produção deverá utilizar modelos agronómicos validados,
+                dados locais e validação especializada.
               </p>
 
             </div>
@@ -1667,59 +1326,43 @@
 
       </section>
 
-    </main>
-  </div>
+    </div>
+  </main>
 
 
-  <!-- MOBILE BOTTOM NAV -->
+  <!-- MOBILE NAV -->
+  <nav class="mobile-bottom fixed bottom-0 left-0 right-0 z-50 bg-[#08130e]/95 backdrop-blur-xl border-t border-white/5">
 
-  <nav class="lg:hidden fixed bottom-3 left-3 right-3 z-50">
+    <div class="grid grid-cols-5 max-w-lg mx-auto">
 
-    <div class="glass rounded-2xl p-2 flex justify-around shadow-2xl">
-
-      <button
-        onclick="showSection('dashboard')"
-        data-mobile-nav="dashboard"
-        class="mobile-nav flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-forest-300"
-      >
-        <span>⌂</span>
-        <span class="text-[9px]">Início</span>
+      <button onclick="showScreen('home')" data-nav="home"
+        class="nav-item active flex flex-col items-center gap-1 py-3 text-[10px]">
+        <span class="text-lg">⌂</span>
+        Início
       </button>
 
-      <button
-        onclick="showSection('farm')"
-        data-mobile-nav="farm"
-        class="mobile-nav flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-white/40"
-      >
-        <span>⌖</span>
-        <span class="text-[9px]">Fazenda</span>
+      <button onclick="showScreen('farm')" data-nav="farm"
+        class="nav-item flex flex-col items-center gap-1 py-3 text-[10px] text-slate-500">
+        <span class="text-lg">◉</span>
+        Propriedade
       </button>
 
-      <button
-        onclick="showSection('rotation')"
-        data-mobile-nav="rotation"
-        class="mobile-nav flex flex-col items-center gap-1 rounded-xl px-4 py-2 text-white/40"
-      >
-        <span>↻</span>
-        <span class="text-[9px]">Rotação</span>
+      <button onclick="showScreen('rotation')" data-nav="rotation"
+        class="nav-item flex flex-col items-center gap-1 py-3 text-[10px] text-slate-500">
+        <span class="text-lg">↻</span>
+        Rotação
       </button>
 
-      <button
-        onclick="showSection('scenarios')"
-        data-mobile-nav="scenarios"
-        class="mobile-nav flex flex-col items-center gap-1 rounded-xl px-4 py-2 text-white/40"
-      >
-        <span>◈</span>
-        <span class="text-[9px]">Cenários</span>
+      <button onclick="showScreen('scenarios')" data-nav="scenarios"
+        class="nav-item flex flex-col items-center gap-1 py-3 text-[10px] text-slate-500">
+        <span class="text-lg">◈</span>
+        E se?
       </button>
 
-      <button
-        onclick="showSection('insights')"
-        data-mobile-nav="insights"
-        class="mobile-nav flex flex-col items-center gap-1 rounded-xl px-4 py-2 text-white/40"
-      >
-        <span>✦</span>
-        <span class="text-[9px]">Insights</span>
+      <button onclick="showScreen('assistant')" data-nav="assistant"
+        class="nav-item flex flex-col items-center gap-1 py-3 text-[10px] text-slate-500">
+        <span class="text-lg">✦</span>
+        Assistente
       </button>
 
     </div>
@@ -1728,721 +1371,862 @@
 
 
   <!-- TOAST -->
-
-  <div
-    id="toast"
-    class="toast fixed bottom-24 lg:bottom-8 right-5 z-[100] glass rounded-2xl px-5 py-4 max-w-sm"
-  >
-    <div class="flex gap-3">
-      <div>✓</div>
-      <div>
-        <div id="toastTitle" class="font-semibold text-sm">
-          Guardado
-        </div>
-        <div id="toastMessage" class="text-xs text-white/40 mt-1">
-          Operação concluída.
-        </div>
-      </div>
-    </div>
+  <div id="toast"
+    class="toast fixed bottom-24 lg:bottom-8 left-1/2 -translate-x-1/2 z-[100] glass rounded-2xl px-5 py-3 text-sm shadow-2xl">
   </div>
 
-
-  <!-- LEAFLET -->
-
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</div>
 
 
-  <script>
+<script>
 
-    /* ============================================
-       STATE
-    ============================================ */
+  /* =========================
+     STATE
+  ========================= */
 
-    const appState = {
+  const state = {
+    selectedCrops: [],
+    farm: {
+      lat: -8.8383,
+      lon: 13.2344,
+      soil: "Não sei"
+    }
+  };
 
-      selectedCrops: [
-        "Milho",
-        "Feijão",
-        "Amendoim"
-      ],
 
-      priorities: {
-        water: 90,
-        soil: 88,
-        climate: 82,
-        yield: 70
-      },
+  /* =========================
+     NAVIGATION
+  ========================= */
 
-      location: {
-        lat: -8.8383,
-        lon: 13.2344
-      }
+  const titles = {
+    home: ["Início", "Acompanhe a sua propriedade"],
+    farm: ["Minha propriedade", "Contextualize a análise"],
+    rotation: ["Rotação", "Explore estratégias"],
+    scenarios: ["E se...?", "Explore possíveis futuros"],
+    assistant: ["Assistente", "Pergunte sobre a sua propriedade"]
+  };
 
+
+  function showScreen(name) {
+
+    document.querySelectorAll(".screen")
+      .forEach(screen => screen.classList.remove("active"));
+
+    const target = document.getElementById("screen-" + name);
+
+    if (target) {
+      target.classList.add("active");
+    }
+
+    document.querySelectorAll("[data-nav]")
+      .forEach(button => {
+
+        button.classList.remove("active");
+
+        if (button.dataset.nav === name) {
+          button.classList.add("active");
+        }
+
+      });
+
+    if (titles[name]) {
+      document.getElementById("pageTitle").textContent = titles[name][0];
+      document.getElementById("pageSubtitle").textContent = titles[name][1];
+    }
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+
+    if (name === "farm") {
+      setTimeout(() => {
+        if (farmMap) {
+          farmMap.invalidateSize();
+        }
+      }, 200);
+    }
+
+    if (name === "home") {
+      setTimeout(() => {
+        if (mainMap) {
+          mainMap.invalidateSize();
+        }
+      }, 200);
+    }
+  }
+
+
+  /* =========================
+     TOAST
+  ========================= */
+
+  let toastTimer;
+
+  function showToast(message) {
+
+    const toast = document.getElementById("toast");
+
+    toast.textContent = message;
+    toast.classList.add("show");
+
+    clearTimeout(toastTimer);
+
+    toastTimer = setTimeout(() => {
+      toast.classList.remove("show");
+    }, 3000);
+  }
+
+
+  /* =========================
+     CONCERNS
+  ========================= */
+
+  function startConcern(type) {
+
+    showScreen("assistant");
+
+    const messages = {
+      água: "Estou preocupado com a disponibilidade de água na minha propriedade.",
+      calor: "Estou preocupado com o aumento da temperatura.",
+      solo: "Quero melhorar a saúde do solo."
     };
 
+    setTimeout(() => {
+      askAssistant(messages[type] || "Quero analisar a minha propriedade.");
+    }, 250);
+  }
 
-    /* ============================================
-       NAVIGATION
-    ============================================ */
 
-    function showSection(sectionId) {
+  /* =========================
+     MAPS
+  ========================= */
 
-      document.querySelectorAll(".section").forEach(section => {
-        section.classList.remove("active");
-      });
+  let mainMap;
+  let farmMap;
+  let farmMarker;
 
-      const section = document.getElementById(sectionId);
 
-      if (section) {
-        section.classList.add("active");
+  function initMaps() {
+
+    mainMap = L.map("map", {
+      zoomControl: false
+    }).setView([-8.8383, 13.2344], 11);
+
+    L.tileLayer(
+      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      {
+        attribution: "&copy; OpenStreetMap contributors"
       }
+    ).addTo(mainMap);
 
-      document.querySelectorAll(".nav-item").forEach(item => {
+    L.marker([-8.8383, 13.2344])
+      .addTo(mainMap)
+      .bindPopup("Área de análise")
+      .openPopup();
 
-        item.classList.remove("nav-active");
-        item.classList.add("text-white/55");
 
-      });
+    farmMap = L.map("farmMap", {
+      zoomControl: false
+    }).setView([-8.8383, 13.2344], 11);
 
-      const desktopNav =
-        document.querySelector(`[data-nav="${sectionId}"]`);
-
-      if (desktopNav) {
-
-        desktopNav.classList.add("nav-active");
-        desktopNav.classList.remove("text-white/55");
-
+    L.tileLayer(
+      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      {
+        attribution: "&copy; OpenStreetMap contributors"
       }
+    ).addTo(farmMap);
+
+    farmMarker = L.marker([-8.8383, 13.2344])
+      .addTo(farmMap)
+      .bindPopup("Minha propriedade");
+
+  }
 
 
-      document.querySelectorAll(".mobile-nav").forEach(item => {
+  function updateFarmMap() {
 
-        item.classList.remove("text-forest-300");
-        item.classList.add("text-white/40");
+    const lat = parseFloat(document.getElementById("latInput").value);
+    const lon = parseFloat(document.getElementById("lonInput").value);
 
-      });
-
-      const mobileNav =
-        document.querySelector(`[data-mobile-nav="${sectionId}"]`);
-
-      if (mobileNav) {
-
-        mobileNav.classList.add("text-forest-300");
-        mobileNav.classList.remove("text-white/40");
-
-      }
-
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-      });
-
-      if (sectionId === "farm") {
-
-        setTimeout(() => {
-
-          if (farmMap) {
-            farmMap.invalidateSize();
-          }
-
-        }, 300);
-
-      }
-
+    if (
+      Number.isNaN(lat) ||
+      Number.isNaN(lon) ||
+      lat < -90 ||
+      lat > 90 ||
+      lon < -180 ||
+      lon > 180
+    ) {
+      showToast("Coordenadas inválidas.");
+      return;
     }
 
+    state.farm.lat = lat;
+    state.farm.lon = lon;
 
-    /* ============================================
-       TOAST
-    ============================================ */
+    farmMap.setView([lat, lon], 11);
 
-    let toastTimer;
+    farmMarker
+      .setLatLng([lat, lon])
+      .bindPopup("Minha propriedade")
+      .openPopup();
 
-    function showToast(title, message) {
+  }
 
-      const toast = document.getElementById("toast");
 
-      document.getElementById("toastTitle").textContent = title;
-      document.getElementById("toastMessage").textContent = message;
+  /* =========================
+     FARM PROFILE
+  ========================= */
 
-      toast.classList.add("show");
+  function setupRange(id, outputId) {
 
-      clearTimeout(toastTimer);
+    const input = document.getElementById(id);
+    const output = document.getElementById(outputId);
 
-      toastTimer = setTimeout(() => {
-        toast.classList.remove("show");
-      }, 3500);
+    input.addEventListener("input", () => {
+      output.textContent = input.value + "%";
+    });
 
-    }
+  }
 
 
-    /* ============================================
-       MAP
-    ============================================ */
+  function saveFarm() {
 
-    let mainMap;
-    let farmMap;
-    let farmMarker;
+    updateFarmMap();
 
+    state.farm.soil =
+      document.getElementById("soilType").value;
 
-    function createMaps() {
+    const farmData = {
+      ...state.farm,
+      organic: document.getElementById("organic").value,
+      waterRetention: document.getElementById("waterRetention").value,
+      drainage: document.getElementById("drainage").value,
+      priorityWater: document.getElementById("priorityWater").value,
+      prioritySoil: document.getElementById("prioritySoil").value,
+      priorityClimate: document.getElementById("priorityClimate").value,
+      priorityProduction: document.getElementById("priorityProduction").value
+    };
 
-      mainMap = L.map("map", {
-        zoomControl: false
-      }).setView(
-        [
-          appState.location.lat,
-          appState.location.lon
-        ],
-        10
-      );
-
-
-      L.tileLayer(
-        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        {
-          maxZoom: 19,
-          attribution: "&copy; OpenStreetMap"
-        }
-      ).addTo(mainMap);
-
-
-      const mainMarker = L.marker([
-        appState.location.lat,
-        appState.location.lon
-      ]).addTo(mainMap);
-
-      mainMarker.bindPopup(
-        "<strong>Fazenda Luanda</strong><br>Área monitorizada"
-      );
-
-
-      farmMap = L.map("farmMap", {
-        zoomControl: false
-      }).setView(
-        [
-          appState.location.lat,
-          appState.location.lon
-        ],
-        10
-      );
-
-
-      L.tileLayer(
-        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        {
-          maxZoom: 19,
-          attribution: "&copy; OpenStreetMap"
-        }
-      ).addTo(farmMap);
-
-
-      farmMarker = L.marker([
-        appState.location.lat,
-        appState.location.lon
-      ]).addTo(farmMap);
-
-
-      farmMap.on("click", function(e) {
-
-        const lat = e.latlng.lat.toFixed(4);
-        const lon = e.latlng.lng.toFixed(4);
-
-        document.getElementById("latInput").value = lat;
-        document.getElementById("lonInput").value = lon;
-
-        appState.location.lat = parseFloat(lat);
-        appState.location.lon = parseFloat(lon);
-
-        farmMarker.setLatLng([
-          lat,
-          lon
-        ]);
-
-        showToast(
-          "Localização atualizada",
-          `${lat}, ${lon}`
-        );
-
-      });
-
-    }
-
-
-    /* ============================================
-       FARM
-    ============================================ */
-
-    function updateSlider(inputId, outputId, values) {
-
-      const value =
-        parseInt(document.getElementById(inputId).value);
-
-      document.getElementById(outputId).textContent =
-        values[value - 1];
-
-    }
-
-
-    function updatePriority() {
-
-      const water =
-        document.getElementById("waterPriority").value;
-
-      const soil =
-        document.getElementById("soilPriority").value;
-
-      const climate =
-        document.getElementById("climatePriority").value;
-
-      const yieldValue =
-        document.getElementById("yieldPriority").value;
-
-
-      document.getElementById("waterPriorityLabel").textContent =
-        water + "%";
-
-      document.getElementById("soilPriorityLabel").textContent =
-        soil + "%";
-
-      document.getElementById("climatePriorityLabel").textContent =
-        climate + "%";
-
-      document.getElementById("yieldPriorityLabel").textContent =
-        yieldValue + "%";
-
-
-      appState.priorities = {
-        water: parseInt(water),
-        soil: parseInt(soil),
-        climate: parseInt(climate),
-        yield: parseInt(yieldValue)
-      };
-
-    }
-
-
-    function saveFarm() {
-
-      const lat =
-        parseFloat(document.getElementById("latInput").value);
-
-      const lon =
-        parseFloat(document.getElementById("lonInput").value);
-
-
-      if (
-        Number.isNaN(lat) ||
-        Number.isNaN(lon)
-      ) {
-
-        showToast(
-          "Dados inválidos",
-          "Verifique a latitude e longitude."
-        );
-
-        return;
-      }
-
-
-      appState.location.lat = lat;
-      appState.location.lon = lon;
-
-
-      if (farmMarker) {
-
-        farmMarker.setLatLng([
-          lat,
-          lon
-        ]);
-
-        farmMap.setView([
-          lat,
-          lon
-        ], 10);
-
-      }
-
-
-      if (mainMap) {
-
-        mainMap.setView([
-          lat,
-          lon
-        ], 10);
-
-      }
-
-
-      showToast(
-        "Perfil guardado",
-        "As preferências da propriedade foram atualizadas."
-      );
-
-    }
-
-
-    /* ============================================
-       CROPS
-    ============================================ */
-
-    function toggleCrop(card) {
-
-      const crop =
-        card.dataset.crop;
-
-      if (card.classList.contains("selected")) {
-
-        if (appState.selectedCrops.length <= 2) {
-
-          showToast(
-            "Mínimo de culturas",
-            "Mantenha pelo menos duas culturas."
-          );
-
-          return;
-
-        }
-
-        card.classList.remove("selected");
-
-        appState.selectedCrops =
-          appState.selectedCrops.filter(
-            item => item !== crop
-          );
-
-      } else {
-
-        card.classList.add("selected");
-
-        appState.selectedCrops.push(crop);
-
-      }
-
-
-      document.getElementById("cropCount").textContent =
-        `${appState.selectedCrops.length} selecionadas`;
-
-    }
-
-
-    /* ============================================
-       ROTATION ENGINE - DEMO
-       ============================================ */
-
-    function generateRotation() {
-
-      const crops =
-        [...appState.selectedCrops];
-
-
-      const fallback = [
-        "Milho",
-        "Feijão",
-        "Amendoim",
-        "Milheto"
-      ];
-
-
-      while (crops.length < 4) {
-
-        const next =
-          fallback.find(
-            crop => !crops.includes(crop)
-          );
-
-        if (!next) break;
-
-        crops.push(next);
-
-      }
-
-
-      const emoji = {
-
-        "Milho": "🌽",
-        "Feijão": "🫘",
-        "Amendoim": "🥜",
-        "Milheto": "🌾",
-        "Soja": "🌱",
-        "Sorgo": "🌿"
-
-      };
-
-
-      const labels = {
-
-        "Milho": "Cultura principal",
-        "Feijão": "Leguminosa",
-        "Amendoim": "Diversificação",
-        "Milheto": "Menor pressão hídrica",
-        "Soja": "Leguminosa",
-        "Sorgo": "Resistente"
-
-      };
-
-
-      const timeline =
-        document.getElementById("rotationTimeline");
-
-
-      timeline.innerHTML = "";
-
-
-      crops.slice(0,4).forEach((crop, index) => {
-
-        timeline.innerHTML += `
-
-          <div class="glass-light rounded-2xl p-4 fade-in">
-
-            <div class="text-xs text-white/35">
-              ANO ${index + 1}
-            </div>
-
-            <div class="text-4xl mt-4">
-              ${emoji[crop] || "🌱"}
-            </div>
-
-            <div class="font-semibold mt-3">
-              ${crop}
-            </div>
-
-            <div class="text-xs text-white/35 mt-1">
-              ${labels[crop] || "Cultura selecionada"}
-            </div>
-
-          </div>
-
-        `;
-
-      });
-
-
-      showToast(
-        "Estratégia criada",
-        "Nova rotação gerada com base nas culturas selecionadas."
-      );
-
-    }
-
-
-    /* ============================================
-       SCENARIOS
-       ============================================ */
-
-    function selectScenario(type) {
-
-      if (type === "balanced") {
-
-        showToast(
-          "Cenário selecionado",
-          "Rotação equilibrada adicionada ao teu plano."
-        );
-
-      }
-
-
-      if (type === "water") {
-
-        showToast(
-          "Cenário selecionado",
-          "Estratégia de baixo consumo de água selecionada."
-        );
-
-      }
-
-    }
-
-
-    /* ============================================
-       NASA POWER
-       ============================================ */
-
-    async function loadNASAData() {
-
-      try {
-
-        const lat =
-          appState.location.lat;
-
-        const lon =
-          appState.location.lon;
-
-
-        const today =
-          new Date();
-
-        const end =
-          new Date(today);
-
-        end.setDate(
-          today.getDate() - 1
-        );
-
-
-        const start =
-          new Date(end);
-
-        start.setDate(
-          end.getDate() - 14
-        );
-
-
-        const formatDate = date => {
-
-          const year =
-            date.getFullYear();
-
-          const month =
-            String(date.getMonth() + 1)
-              .padStart(2, "0");
-
-          const day =
-            String(date.getDate())
-              .padStart(2, "0");
-
-          return `${year}${month}${day}`;
-
-        };
-
-
-        const startDate =
-          formatDate(start);
-
-        const endDate =
-          formatDate(end);
-
-
-        const params = [
-          "T2M",
-          "T2M_MAX",
-          "T2M_MIN",
-          "PRECTOTCORR"
-        ].join(",");
-
-
-        const url =
-          `https://power.larc.nasa.gov/api/temporal/daily/point?` +
-          `parameters=${params}` +
-          `&community=AG` +
-          `&longitude=${lon}` +
-          `&latitude=${lat}` +
-          `&start=${startDate}` +
-          `&end=${endDate}` +
-          `&format=JSON`;
-
-
-        const response =
-          await fetch(url);
-
-
-        if (!response.ok) {
-          throw new Error("NASA POWER request failed");
-        }
-
-
-        const data =
-          await response.json();
-
-
-        const properties =
-          data.properties;
-
-
-        if (!properties ||
-            !properties.parameter) {
-
-          throw new Error("Invalid NASA response");
-
-        }
-
-
-        const temperature =
-          properties.parameter.T2M;
-
-        const precipitation =
-          properties.parameter.PRECTOTCORR;
-
-
-        const tempValues =
-          Object.values(temperature)
-            .filter(value => value !== -999);
-
-
-        const rainValues =
-          Object.values(precipitation)
-            .filter(value => value !== -999);
-
-
-        if (tempValues.length) {
-
-          const avgTemp =
-            tempValues.reduce(
-              (a,b) => a + b,
-              0
-            ) / tempValues.length;
-
-
-          document.getElementById(
-            "tempValue"
-          ).textContent =
-            avgTemp.toFixed(1);
-
-        }
-
-
-        if (rainValues.length) {
-
-          const totalRain =
-            rainValues.reduce(
-              (a,b) => a + b,
-              0
-            );
-
-
-          document.getElementById(
-            "rainValue"
-          ).textContent =
-            totalRain.toFixed(0);
-
-        }
-
-
-        console.log(
-          "NASA POWER data:",
-          data
-        );
-
-      } catch (error) {
-
-        console.warn(
-          "NASA POWER indisponível neste momento.",
-          error
-        );
-
-      }
-
-    }
-
-
-    /* ============================================
-       START
-    ============================================ */
-
-    document.addEventListener(
-      "DOMContentLoaded",
-      () => {
-
-        createMaps();
-
-        loadNASAData();
-
-        updatePriority();
-
-      }
+    localStorage.setItem(
+      "agroresilienceFarm",
+      JSON.stringify(farmData)
     );
 
-  </script>
+    showToast("Perfil da propriedade guardado.");
+
+    loadNASAData();
+  }
+
+
+  function loadFarm() {
+
+    const saved =
+      localStorage.getItem("agroresilienceFarm");
+
+    if (!saved) {
+      return;
+    }
+
+    try {
+
+      const farm = JSON.parse(saved);
+
+      document.getElementById("latInput").value = farm.lat;
+      document.getElementById("lonInput").value = farm.lon;
+      document.getElementById("soilType").value = farm.soil;
+
+      const fields = [
+        "organic",
+        "waterRetention",
+        "drainage",
+        "priorityWater",
+        "prioritySoil",
+        "priorityClimate",
+        "priorityProduction"
+      ];
+
+      fields.forEach(id => {
+
+        if (farm[id] !== undefined) {
+
+          document.getElementById(id).value = farm[id];
+
+          const output =
+            document.getElementById(id + "Value");
+
+          if (output) {
+            output.textContent = farm[id] + "%";
+          }
+
+        }
+
+      });
+
+      state.farm = farm;
+
+    } catch (error) {
+      console.error(error);
+    }
+
+  }
+
+
+  /* =========================
+     CROPS
+  ========================= */
+
+  function toggleCrop(element) {
+
+    const crop = element.dataset.crop;
+
+    if (state.selectedCrops.includes(crop)) {
+
+      state.selectedCrops =
+        state.selectedCrops.filter(item => item !== crop);
+
+      element.classList.remove("selected");
+
+    } else {
+
+      state.selectedCrops.push(crop);
+
+      element.classList.add("selected");
+
+    }
+
+    document.getElementById("cropCounter").textContent =
+      state.selectedCrops.length + " selecionadas";
+
+  }
+
+
+  function generateRotation() {
+
+    if (state.selectedCrops.length < 2) {
+
+      showToast("Selecione pelo menos duas culturas.");
+
+      return;
+    }
+
+    const result =
+      document.getElementById("rotationResult");
+
+    const timeline =
+      document.getElementById("rotationTimeline");
+
+    timeline.innerHTML = "";
+
+    const selected =
+      [...state.selectedCrops];
+
+    while (selected.length < 4) {
+      selected.push(state.selectedCrops[selected.length % state.selectedCrops.length]);
+    }
+
+    const icons = {
+      "Milho": "🌽",
+      "Feijão": "🫘",
+      "Amendoim": "🥜",
+      "Milheto": "🌾",
+      "Soja": "🌿",
+      "Sorgo": "🌾"
+    };
+
+    selected.slice(0, 4).forEach((crop, index) => {
+
+      const item = document.createElement("div");
+
+      item.className =
+        "rotation-item text-center";
+
+      item.innerHTML = `
+        <div class="w-16 h-16 mx-auto rounded-2xl
+                    bg-green-400/10 border border-green-400/10
+                    flex items-center justify-center text-3xl">
+          ${icons[crop] || "🌱"}
+        </div>
+
+        <div class="font-bold text-sm mt-3">
+          Ano ${index + 1}
+        </div>
+
+        <div class="text-xs text-slate-400 mt-1">
+          ${crop}
+        </div>
+      `;
+
+      timeline.appendChild(item);
+
+    });
+
+    result.classList.remove("hidden");
+
+    result.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+
+  }
+
+
+  /* =========================
+     SCENARIOS
+  ========================= */
+
+  const tempScenario =
+    document.getElementById("tempScenario");
+
+  const rainScenario =
+    document.getElementById("rainScenario");
+
+
+  function updateScenario() {
+
+    const temp =
+      Number(tempScenario.value);
+
+    const rain =
+      Number(rainScenario.value);
+
+    document.getElementById("tempScenarioValue")
+      .textContent = "+" + temp + "°C";
+
+    document.getElementById("rainScenarioValue")
+      .textContent =
+      rain > 0 ? "+" + rain + "%" : rain + "%";
+
+
+    const waterImpact =
+      Math.round(
+        Math.abs(rain) * .75 +
+        temp * 2
+      );
+
+    const heatImpact =
+      Math.round(
+        temp * 12 +
+        (rain < 0 ? Math.abs(rain) * .15 : 0)
+      );
+
+    const score =
+      Math.max(
+        35,
+        Math.min(
+          95,
+          82 - temp * 5 - Math.max(0, -rain) * .18
+        )
+      );
+
+
+    document.getElementById("scenarioWater")
+      .textContent =
+      "-" + waterImpact + "%";
+
+    document.getElementById("scenarioHeat")
+      .textContent =
+      "+" + heatImpact + "%";
+
+    document.getElementById("scenarioScore")
+      .textContent =
+      Math.round(score) + "/100";
+
+
+    const risk =
+      score >= 75
+        ? ["Risco baixo", "bg-green-400/10", "text-green-300"]
+        : score >= 55
+          ? ["Risco moderado", "bg-yellow-400/10", "text-yellow-300"]
+          : ["Risco elevado", "bg-red-400/10", "text-red-300"];
+
+
+    const riskElement =
+      document.getElementById("scenarioRisk");
+
+    riskElement.textContent = risk[0];
+
+    riskElement.className =
+      "px-3 py-1.5 rounded-full text-xs " +
+      risk[1] + " " + risk[2];
+
+
+    document.getElementById("scenarioExplanation")
+      .textContent =
+      buildScenarioExplanation(temp, rain);
+
+  }
+
+
+  function buildScenarioExplanation(temp, rain) {
+
+    if (temp >= 3 && rain <= -20) {
+
+      return "Este cenário representa uma pressão climática elevada. A combinação de maior temperatura e menor precipitação reforça a importância de estratégias orientadas para conservação de água, diversificação e adaptação.";
+
+    }
+
+    if (temp >= 2 || rain <= -20) {
+
+      return "O cenário indica pressão climática moderada a elevada. Estratégias que reduzam a dependência de água e diversifiquem as culturas podem tornar-se mais relevantes.";
+
+    }
+
+    if (temp === 0 && rain >= 0) {
+
+      return "Neste cenário, a pressão climática simulada é relativamente baixa. A diversidade e a saúde do solo continuam importantes para a resiliência a longo prazo.";
+
+    }
+
+    return "O cenário simulado sugere uma alteração moderada das condições. A aplicação pode ajudar a comparar estratégias e perceber quais respondem melhor às suas prioridades.";
+
+  }
+
+
+  tempScenario.addEventListener("input", updateScenario);
+  rainScenario.addEventListener("input", updateScenario);
+
+
+  /* =========================
+     ASSISTANT
+  ========================= */
+
+  function addChatMessage(text, type) {
+
+    const box =
+      document.getElementById("chatBox");
+
+    const wrapper =
+      document.createElement("div");
+
+    wrapper.className =
+      type === "user"
+        ? "chat-user p-4 max-w-[88%] ml-auto"
+        : "chat-bot p-4 max-w-[88%]";
+
+    if (type === "bot") {
+
+      wrapper.innerHTML = `
+        <div class="text-xs text-green-300 font-semibold mb-2">
+          AgroResilience
+        </div>
+
+        <p class="text-sm text-slate-300 leading-relaxed">
+          ${text}
+        </p>
+      `;
+
+    } else {
+
+      wrapper.innerHTML = `
+        <p class="text-sm text-white leading-relaxed">
+          ${text}
+        </p>
+      `;
+
+    }
+
+    box.appendChild(wrapper);
+
+    box.scrollTop = box.scrollHeight;
+
+  }
+
+
+  function askAssistant(question) {
+
+    addChatMessage(question, "user");
+
+    setTimeout(() => {
+
+      const response =
+        assistantResponse(question);
+
+      addChatMessage(response, "bot");
+
+    }, 450);
+
+  }
+
+
+  function sendMessage(event) {
+
+    event.preventDefault();
+
+    const input =
+      document.getElementById("chatInput");
+
+    const message =
+      input.value.trim();
+
+    if (!message) {
+      return;
+    }
+
+    input.value = "";
+
+    askAssistant(message);
+
+  }
+
+
+  function assistantResponse(question) {
+
+    const q =
+      question.toLowerCase();
+
+
+    if (
+      q.includes("água") ||
+      q.includes("agua") ||
+      q.includes("seca") ||
+      q.includes("hídr") ||
+      q.includes("hidr")
+    ) {
+
+      return "Se a água é a sua principal preocupação, eu começaria por analisar três coisas: o padrão recente de precipitação, a capacidade do solo de reter água e a composição da rotação. Depois podemos testar cenários com menos precipitação e comparar estratégias.";
+
+    }
+
+
+    if (
+      q.includes("solo") ||
+      q.includes("terra")
+    ) {
+
+      return "Para explorar a saúde do solo, podemos considerar o tipo de solo, matéria orgânica, retenção de água e a diversidade da rotação. A aplicação pode comparar estratégias, mas uma avaliação agronómica local continua necessária para decisões definitivas.";
+
+    }
+
+
+    if (
+      q.includes("chover") ||
+      q.includes("chuva") ||
+      q.includes("precipitação")
+    ) {
+
+      return "Podemos simular uma redução da precipitação no módulo “E se...?”. Por exemplo, experimente -20% ou -30% e observe como o índice exploratório de resiliência muda.";
+
+    }
+
+
+    if (
+      q.includes("rotação") ||
+      q.includes("rotacao") ||
+      q.includes("diversificar")
+    ) {
+
+      return "A ideia é evitar olhar apenas para uma cultura isoladamente. No laboratório de rotação pode combinar cereais e leguminosas e comparar sequências diferentes segundo as prioridades da sua propriedade.";
+
+    }
+
+
+    if (
+      q.includes("milho")
+    ) {
+
+      return "O milho pode fazer parte de uma rotação, mas a análise deve considerar água disponível, condições térmicas, características do solo e as culturas que vêm antes e depois. Podemos testar diferentes sequências no laboratório.";
+
+    }
+
+
+    if (
+      q.includes("nasa") ||
+      q.includes("satélite") ||
+      q.includes("satélite")
+    ) {
+
+      return "A aplicação utiliza dados ambientais da NASA como contexto para a análise. Nesta versão, a integração meteorológica utiliza a NASA POWER. Numa versão avançada podemos acrescentar outras observações de Terra adequadas ao problema.";
+
+    }
+
+
+    return "Posso ajudar a explorar água, temperatura, precipitação, solo e rotação. Tente perguntar algo como “Tenho pouca água. O que devo analisar?” ou “O que acontece se a chuva diminuir 20%?”";
+
+  }
+
+
+  /* =========================
+     NASA POWER
+  ========================= */
+
+  async function loadNASAData() {
+
+    const lat =
+      parseFloat(
+        document.getElementById("latInput")?.value ||
+        state.farm.lat
+      );
+
+    const lon =
+      parseFloat(
+        document.getElementById("lonInput")?.value ||
+        state.farm.lon
+      );
+
+    if (
+      Number.isNaN(lat) ||
+      Number.isNaN(lon)
+    ) {
+      return;
+    }
+
+
+    const today =
+      new Date();
+
+    const end =
+      today.toISOString()
+        .slice(0, 10)
+        .replaceAll("-", "");
+
+
+    const startDate =
+      new Date(
+        today.getTime() -
+        14 * 24 * 60 * 60 * 1000
+      );
+
+    const start =
+      startDate.toISOString()
+        .slice(0, 10)
+        .replaceAll("-", "");
+
+
+    const url =
+      "https://power.larc.nasa.gov/api/temporal/daily/point" +
+      "?parameters=T2M,T2M_MAX,T2M_MIN,PRECTOTCORR" +
+      "&community=AG" +
+      "&longitude=" + encodeURIComponent(lon) +
+      "&latitude=" + encodeURIComponent(lat) +
+      "&start=" + start +
+      "&end=" + end +
+      "&format=JSON";
+
+
+    try {
+
+      const response =
+        await fetch(url);
+
+      if (!response.ok) {
+        throw new Error("NASA API error");
+      }
+
+      const data =
+        await response.json();
+
+      const values =
+        data.properties.parameter;
+
+
+      const temperatures =
+        Object.values(values.T2M || {})
+          .filter(Number.isFinite);
+
+      const rainfall =
+        Object.values(values.PRECTOTCORR || {})
+          .filter(Number.isFinite);
+
+
+      if (temperatures.length) {
+
+        const average =
+          temperatures.reduce(
+            (sum, value) => sum + value,
+            0
+          ) / temperatures.length;
+
+        document.getElementById(
+          "temperatureValue"
+        ).textContent =
+          average.toFixed(1) + "°C";
+
+      }
+
+
+      if (rainfall.length) {
+
+        const total =
+          rainfall.reduce(
+            (sum, value) => sum + value,
+            0
+          );
+
+        document.getElementById(
+          "rainValue"
+        ).textContent =
+          total.toFixed(1) + " mm";
+
+      }
+
+
+    } catch (error) {
+
+      console.warn(
+        "Não foi possível obter os dados NASA POWER:",
+        error
+      );
+
+      showToast(
+        "Não foi possível atualizar os dados NASA agora."
+      );
+
+    }
+
+  }
+
+
+  /* =========================
+     ANALYZE
+  ========================= */
+
+  function analyzeFarm() {
+
+    showToast("A analisar a propriedade...");
+
+    setTimeout(() => {
+
+      showScreen("assistant");
+
+      addChatMessage(
+        "Analisei o contexto disponível da sua propriedade. Para tornar a análise mais útil, recomendo verificar primeiro a água, o solo e a rotação. Podemos explorar cada um destes pontos juntos.",
+        "bot"
+      );
+
+    }, 900);
+
+  }
+
+
+  /* =========================
+     INITIALIZATION
+  ========================= */
+
+  document.addEventListener("DOMContentLoaded", () => {
+
+    initMaps();
+
+    loadFarm();
+
+    setupRange("organic", "organicValue");
+    setupRange("waterRetention", "waterRetentionValue");
+    setupRange("drainage", "drainageValue");
+
+    setupRange("priorityWater", "priorityWaterValue");
+    setupRange("prioritySoil", "prioritySoilValue");
+    setupRange("priorityClimate", "priorityClimateValue");
+    setupRange("priorityProduction", "priorityProductionValue");
+
+    updateScenario();
+
+    setTimeout(() => {
+      loadNASAData();
+    }, 700);
+
+  });
+
+</script>
 
 </body>
 </html>
